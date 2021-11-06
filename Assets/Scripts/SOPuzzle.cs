@@ -5,87 +5,69 @@ using UnityEngine;
 namespace Puzzle
 {
     [CreateAssetMenu(menuName = "Scriptable Objects/Puzzle")]
-    public class SOPuzzle : ScriptableObject
+    public class SOPuzzle : ScriptableObject, IEnumerable
     {
-        private Dictionary<Path, PathType> _paths = new Dictionary<Path, PathType>();
+        public UDictionaryPaths Paths = new UDictionaryPaths();
+        public Vector2Int Size { get; private set; } = Vector2Int.zero;
 
-        /// <summary>
-        /// Adds/updates the given path and its type. Order of points does not matter.
-        /// </summary>
-        /// <param name="p1"></param>
-        /// <param name="p2"></param>
-        /// <param name="pathType"></param>
-        /// <returns> true if the value was added and false if the value was updated. </returns>
-        public bool AddPath(Vector2Int p1, Vector2Int p2, PathType pathType)
-        {
-            Path path = new Path(p1, p2);
-
-            // case: create new entry
-            if (!_paths.ContainsKey(path))
-            {
-                _paths.Add(path, pathType);
-                return true;
-            }
-            // case: update entry
-            else
-            {
-                _paths[path] = pathType;
-                return false;
-            }
-        }
-
-        /// <summary>
-        /// Gets the pathtype of the given path entry.
-        /// </summary>
-        /// <param name="start"></param>
-        /// <param name="end"></param>
-        /// <returns> returns pathtype. Default to PathType.NULL </returns>
-        public PathType GetPath(Vector2Int start, Vector2Int end)
-        {
-            Path path = new Path(start, end);
-
-            // case: create new entry
-            if (_paths.ContainsKey(path))
-            {
-                return _paths[path];
-            }
-            // case: update entry
-            else
-            {
-                return PathType.NULL;
-            }
-        }
-
-        /// <summary>
-        /// Removes the path from the puzzle
-        /// </summary>
-        /// <param name="start"></param>
-        /// <param name="end"></param>
-        /// <returns> returns true if there was a path to remove. Otherwise returns false. </returns>
-        public bool RemovePath(Vector2Int start, Vector2Int end)
-        {
-            Path path = new Path(start, end);
-            return _paths.Remove(path); 
-        }
-
+        #region Dynamics
         /// <summary>
         /// Clears the puzzle's paths
         /// </summary>
         public void ClearPaths()
         {
-            _paths = new Dictionary<Path, PathType>();
+            Paths.Clear();
+            Size = Vector2Int.zero;
+        }
+
+        void OnValidate()
+        {
+            UpdateSize();
         }
 
         /// <summary>
-        /// Performs callback for each path in the puzzle.
+        /// Parses the puzzle entries to update Size.
+        /// The min node is assumed to be 0.
         /// </summary>
-        /// <param name="callback"> Void callback that is given a path and its type. </param>
-        public void Foreach(System.Action<Path, PathType> callback)
+        void UpdateSize()
         {
-            foreach (Path path in _paths.Keys)
+            Vector2Int max = Vector2Int.zero;
+            foreach (KeyValuePair<Path, PathType> entry in Paths)
             {
-                callback(path, GetPath(path.p1, path.p2));
+                Path path = entry.Key;
+                PathType pathType = entry.Value;
+                if (pathType == PathType.NULL) continue;
+
+                if (max.x < path.p1.x + 1)
+                {
+                    max.x = path.p1.x + 1;
+                }
+                if (max.x < path.p2.x + 1)
+                {
+                    max.x = path.p2.x + 1;
+                }
+                if (max.y < path.p1.y + 1)
+                {
+                    max.y = path.p1.y + 1;
+                }
+                if (max.y < path.p2.y + 1)
+                {
+                    max.y = path.p2.y + 1;
+                }
             }
+
+            Size = max;
+        }
+        #endregion
+
+        #region Utilities
+        /// <summary>
+        /// Uses Serializable Dictionary packages enumerator. Note use var in a foreach loop, not Path.
+        /// </summary>
+        /// <returns></returns>
+        public IEnumerator GetEnumerator()
+        {
+            return Paths.GetEnumerator();
         }
 
         /// <summary>
@@ -96,20 +78,29 @@ namespace Puzzle
         {
             string output = "";
 
-            foreach (Path path in _paths.Keys)
+            foreach (Path path in Paths.Keys)
             {
-                output += _paths[path] + ": ";
-                output += path;
+                output += Paths[path] + ": ";
+
+                switch (Paths[path])
+                {
+                    case PathType.Connected:    output += " ----- "; break;
+                    case PathType.Split:        output += " -- -- "; break;
+                    default:                    output += " XXXXX "; break;
+                }
+                
                 output += "\n";
             }
 
             return output;
         }
+        #endregion
     }
 
     /// <summary>
     /// An undirected path between 2d points
     /// </summary>
+    [System.Serializable]
     public struct Path
     {
         public Vector2Int p1;
@@ -127,11 +118,23 @@ namespace Puzzle
             return (p1 == other.p1 && p2 == other.p2) || (p1 == other.p2 && p2 == other.p1);
         }
 
+        // Visual Studio's automagic hash
+        public override int GetHashCode()
+        {
+            int hashCode = 1369944177;
+            hashCode = hashCode * -1521134295 + p1.GetHashCode();
+            hashCode = hashCode * -1521134295 + p2.GetHashCode();
+            return hashCode;
+        }
+
         public override string ToString()
         {
             return "(" + p1.x + ", " + p1.y + ") --- (" + p2.x + ", " + p2.y + ")";
         }
     }
+
+    [System.Serializable]
+    public class UDictionaryPaths : SerializableDictionary<Path, PathType> { }
 
     public enum PathType
     {
