@@ -100,7 +100,7 @@ public class PuzzleRenderer : MonoBehaviour
                     break;
 
                 case PathType.Split:
-
+                    DrawSplitPath(path);
                     break;
 
                 default: continue;
@@ -210,6 +210,27 @@ public class PuzzleRenderer : MonoBehaviour
             path.p2
         };
         DrawConnectedStroke(points);
+    }
+
+    /// <summary>
+    /// Draws a split path with the _splitGap proportional gap in the middle.
+    /// TODO: this needs to combine with corner logic
+    /// </summary>
+    /// <param name="path"></param>
+    void DrawSplitPath(Path path)
+    {
+        Vector2[] stroke1 =
+        {
+            path.p1,
+            Vector2.Lerp(path.p1, path.p2, 0.5f - _splitGap / 2)
+        };
+        Vector2[] stroke2 = {
+            path.p2,
+            Vector2.Lerp(path.p2, path.p1, 0.5f - _splitGap / 2)
+        };
+
+        DrawConnectedStroke(stroke1);
+        DrawConnectedStroke(stroke2);
     }
 
     /// <summary>
