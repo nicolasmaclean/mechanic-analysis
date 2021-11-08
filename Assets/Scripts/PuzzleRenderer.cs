@@ -151,7 +151,6 @@ public class PuzzleRenderer : MonoBehaviour
                 // due to LineRenderer this can no be represented.
                 if (_puzzle.Paths[node.Value[0]] == PathType.Split || _puzzle.Paths[node.Value[1]] == PathType.Split)
                 {
-                    Debug.Log(node.Value[0] + " " + node.Value[1]);
                     continue;
                 }
 
