@@ -101,7 +101,7 @@ namespace Puzzle
     /// An undirected path between 2d points
     /// </summary>
     [System.Serializable]
-    public struct Path
+    public class Path
     {
         public Vector2Int p1;
         public Vector2Int p2;
@@ -110,6 +110,15 @@ namespace Puzzle
         {
             p1 = point1;
             p2 = point2;
+        }
+
+        /// <summary>
+        /// Calculates a normalized direction vector from p1 to p2.
+        /// </summary>
+        /// <returns></returns>
+        public Vector2 GetDirection()
+        {
+            return ((Vector2) p2 - p1).normalized;
         }
 
         public override bool Equals(object obj)
@@ -142,4 +151,4 @@ namespace Puzzle
         Connected = 1,
         Split = 2
     }
-}
+};

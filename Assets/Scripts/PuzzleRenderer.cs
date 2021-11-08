@@ -74,11 +74,11 @@ public class PuzzleRenderer : MonoBehaviour
             // shortens the stroke away from any adjacent corner(s)
             if (corners.ContainsKey(corner.Value[0]))
             {
-                ShortenStroke(ref stroke, true);
+                ShortenStroke(ref stroke, true, _lineWidth);
             }
             if (corners.ContainsKey(corner.Value[1]))
             {
-                ShortenStroke(ref stroke, false);
+                ShortenStroke(ref stroke, false, _lineWidth);
             }
 
             DrawConnectedStroke(stroke);
@@ -120,7 +120,7 @@ public class PuzzleRenderer : MonoBehaviour
     Dictionary<Vector2Int, Vector2Int[]> GetCorners()
     {
         // compile graph from edge orientation to node
-        Dictionary<Vector2Int, List<Vector2Int>> nodes = new Dictionary<Vector2Int, List<Vector2Int>>();
+        Dictionary<Vector2Int, List<Path>> nodes = new Dictionary<Vector2Int, List<Path>>();
         foreach (KeyValuePair<Path, PathType> pair in _puzzle)
         {
             if (pair.Value == PathType.NULL) continue;
@@ -129,34 +129,43 @@ public class PuzzleRenderer : MonoBehaviour
 
             if (!nodes.ContainsKey(p1))
             {
-                nodes.Add(p1, new List<Vector2Int>());
+                nodes.Add(p1, new List<Path>());
             }
 
             if (!nodes.ContainsKey(p2))
             {
-                nodes.Add(p2, new List<Vector2Int>());
+                nodes.Add(p2, new List<Path>());
             }
 
-            nodes[p1].Add(p2);
-            nodes[p2].Add(p1);
+            nodes[p1].Add(pair.Key);
+            nodes[p2].Add(pair.Key);
         }
 
         // search nodes for corners
         Dictionary<Vector2Int, Vector2Int[]> corners = new Dictionary<Vector2Int, Vector2Int[]>();
-        foreach (KeyValuePair<Vector2Int, List<Vector2Int>> node in nodes)
+        foreach (KeyValuePair<Vector2Int, List<Path>> node in nodes)
         {
             if (node.Value.Count == 2)
             {
-                Vector2 dir1 = ((Vector2)node.Value[0] - node.Key).normalized;
-                Vector2 dir2 = ((Vector2)node.Value[1] - node.Key).normalized;
+                // ignores corners that have a split connection.
+                // due to LineRenderer this can no be represented.
+                if (_puzzle.Paths[node.Value[0]] == PathType.Split || _puzzle.Paths[node.Value[1]] == PathType.Split)
+                {
+                    Debug.Log(node.Value[0] + " " + node.Value[1]);
+                    continue;
+                }
+
+                // calculates direction vectors
+                Vector2 dir1 = node.Value[0].GetDirection();
+                Vector2 dir2 = node.Value[1].GetDirection();
 
                 bool parallel = dir1 == dir2;
                 bool antiParallel = dir1 == -dir2;
                 if (!(parallel || antiParallel))
                 {
                     Vector2Int[] corner = {
-                        node.Value[0],
-                        node.Value[1]
+                        node.Value[0].p1 == node.Key ? node.Value[0].p2 : node.Value[0].p1,
+                        node.Value[1].p1 == node.Key ? node.Value[1].p2 : node.Value[1].p1,
                     };
 
                     corners.Add(node.Key, corner);
@@ -209,6 +218,9 @@ public class PuzzleRenderer : MonoBehaviour
             path.p1,
             path.p2
         };
+
+        LengthenStroke(ref points, true, _lineWidth / 2);
+        LengthenStroke(ref points, false, _lineWidth / 2);
         DrawConnectedStroke(points);
     }
 
@@ -228,6 +240,9 @@ public class PuzzleRenderer : MonoBehaviour
             path.p2,
             Vector2.Lerp(path.p2, path.p1, 0.5f - _splitGap / 2)
         };
+
+        LengthenStroke(ref stroke1, true, _lineWidth / 2);
+        LengthenStroke(ref stroke2, true, _lineWidth / 2);
 
         DrawConnectedStroke(stroke1);
         DrawConnectedStroke(stroke2);
@@ -257,9 +272,9 @@ public class PuzzleRenderer : MonoBehaviour
     /// The point internal to that being manipulated will not be affected.
     /// This operation will consider local and puzzle space.
     /// </summary>
-    /// <param name="stroke"> The puzzle space coordinates of a stroke. </param>
+    /// <param name="stroke"> The puzzle space coordinates of a stroke. True is the first point in the stroke. </param>
     /// <param name="first"> Selects which end of the stroke to manipulate. </param>
-    void ShortenStroke(ref Vector2[] stroke, bool first)
+    void ShortenStroke(ref Vector2[] stroke, bool first, float amount)
     {
         if (stroke.Length < 2)
         {
@@ -278,7 +293,7 @@ public class PuzzleRenderer : MonoBehaviour
             dir = (stroke[lastI] - stroke[lastI - 1]).normalized;
         }
 
-        dir *= _lineWidth;
+        dir *= amount;
         dir /= _spacing;
 
         if (first)
@@ -290,6 +305,12 @@ public class PuzzleRenderer : MonoBehaviour
             int lastI = stroke.Length - 1;
             stroke[lastI] -= dir;
         }
+    }
+
+    // wrapper of shorten stroke.
+    void LengthenStroke(ref Vector2[] stroke, bool first, float amount)
+    {
+        ShortenStroke(ref stroke, first, -amount);
     }
 
     /// <summary>
