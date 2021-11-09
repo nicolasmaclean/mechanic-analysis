@@ -58,7 +58,7 @@ public class PuzzleRenderer : MonoBehaviour
     {
         Clearlines();
         _lineWidth = _linePrefab.GetComponent<LineRenderer>().startWidth;
-        Dictionary<Vector2Int, Vector2Int[]> corners = GetCorners();
+        Dictionary<Vector2Int, Vector2Int[]> corners = _puzzle.GetCorners();
         UpdatePuzzleToLocalLogic();
 
         // draw corners
@@ -106,73 +106,6 @@ public class PuzzleRenderer : MonoBehaviour
                 default: continue;
             }
         }
-    }
-
-    // Should refactor/move methods to SOPuzzle that are not directly used in renderering like this
-    /// <summary>
-    /// Finds all corner nodes. A corner is a node with connections that are non-parallel.
-    /// In a square grid, these connections would be perpendicular.
-    /// </summary>
-    /// <returns>
-    /// The key of the dictionary is node central in the corner
-    /// and the array contains its 2 non-parallel neighbors.
-    /// </returns>
-    Dictionary<Vector2Int, Vector2Int[]> GetCorners()
-    {
-        // compile graph from edge orientation to node
-        Dictionary<Vector2Int, List<Path>> nodes = new Dictionary<Vector2Int, List<Path>>();
-        foreach (KeyValuePair<Path, PathType> pair in _puzzle)
-        {
-            if (pair.Value == PathType.NULL) continue;
-            Vector2Int p1 = pair.Key.p1;
-            Vector2Int p2 = pair.Key.p2;
-
-            if (!nodes.ContainsKey(p1))
-            {
-                nodes.Add(p1, new List<Path>());
-            }
-
-            if (!nodes.ContainsKey(p2))
-            {
-                nodes.Add(p2, new List<Path>());
-            }
-
-            nodes[p1].Add(pair.Key);
-            nodes[p2].Add(pair.Key);
-        }
-
-        // search nodes for corners
-        Dictionary<Vector2Int, Vector2Int[]> corners = new Dictionary<Vector2Int, Vector2Int[]>();
-        foreach (KeyValuePair<Vector2Int, List<Path>> node in nodes)
-        {
-            if (node.Value.Count == 2)
-            {
-                // ignores corners that have a split connection.
-                // due to LineRenderer this can no be represented.
-                if (_puzzle.Paths[node.Value[0]] == PathType.Split || _puzzle.Paths[node.Value[1]] == PathType.Split)
-                {
-                    continue;
-                }
-
-                // calculates direction vectors
-                Vector2 dir1 = node.Value[0].GetDirection();
-                Vector2 dir2 = node.Value[1].GetDirection();
-
-                bool parallel = dir1 == dir2;
-                bool antiParallel = dir1 == -dir2;
-                if (!(parallel || antiParallel))
-                {
-                    Vector2Int[] corner = {
-                        node.Value[0].p1 == node.Key ? node.Value[0].p2 : node.Value[0].p1,
-                        node.Value[1].p1 == node.Key ? node.Value[1].p2 : node.Value[1].p1,
-                    };
-
-                    corners.Add(node.Key, corner);
-                }
-            }
-        }
-
-        return corners;
     }
 
     #region coordinate space conversions

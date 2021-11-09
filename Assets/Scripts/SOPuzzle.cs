@@ -32,7 +32,7 @@ namespace Puzzle
         void UpdateSize()
         {
             Vector2Int max = Vector2Int.zero;
-            foreach (KeyValuePair<Path, PathType> entry in Paths)
+            foreach (KeyValuePair<Path, PathType> entry in this)
             {
                 Path path = entry.Key;
                 PathType pathType = entry.Value;
@@ -61,6 +61,80 @@ namespace Puzzle
         #endregion
 
         #region Utilities
+        /// <summary>
+        /// Finds all corner nodes. A corner is a node with connections that are non-parallel.
+        /// In a square grid, these connections would be perpendicular.
+        /// </summary>
+        /// <returns>
+        /// The key of the dictionary is node central in the corner
+        /// and the array contains its 2 non-parallel neighbors.
+        /// </returns>
+        public Dictionary<Vector2Int, Vector2Int[]> GetCorners()
+        {
+            // search nodes for corners
+            Dictionary<Vector2Int, Vector2Int[]> corners = new Dictionary<Vector2Int, Vector2Int[]>();
+            foreach (KeyValuePair<Vector2Int, List<Path>> node in GetAdjacencyMatrix())
+            {
+                if (node.Value.Count == 2)
+                {
+                    // ignores corners that have a split connection.
+                    // due to limitations of LineRenderer this can not be represented.
+                    if (Paths[node.Value[0]] == PathType.Split || Paths[node.Value[1]] == PathType.Split)
+                    {
+                        continue;
+                    }
+
+                    // calculates direction vectors
+                    Vector2 dir1 = node.Value[0].GetDirection();
+                    Vector2 dir2 = node.Value[1].GetDirection();
+
+                    bool parallel = dir1 == dir2;
+                    bool antiParallel = dir1 == -dir2;
+                    if (!(parallel || antiParallel))
+                    {
+                        Vector2Int[] corner = {
+                        node.Value[0].p1 == node.Key ? node.Value[0].p2 : node.Value[0].p1,
+                        node.Value[1].p1 == node.Key ? node.Value[1].p2 : node.Value[1].p1
+                    };
+
+                        corners.Add(node.Key, corner);
+                    }
+                }
+            }
+
+            return corners;
+        }
+
+        /// <summary>
+        /// Creates and returns the adjacency matrix of the puzzle.
+        /// </summary>
+        /// <returns></returns>
+        public Dictionary<Vector2Int, List<Path>> GetAdjacencyMatrix()
+        {
+            Dictionary<Vector2Int, List<Path>> nodes = new Dictionary<Vector2Int, List<Path>>();
+            foreach (KeyValuePair<Path, PathType> pair in this)
+            {
+                if (pair.Value == PathType.NULL) continue;
+                Vector2Int p1 = pair.Key.p1;
+                Vector2Int p2 = pair.Key.p2;
+
+                if (!nodes.ContainsKey(p1))
+                {
+                    nodes.Add(p1, new List<Path>());
+                }
+
+                if (!nodes.ContainsKey(p2))
+                {
+                    nodes.Add(p2, new List<Path>());
+                }
+
+                nodes[p1].Add(pair.Key);
+                nodes[p2].Add(pair.Key);
+            }
+
+            return nodes;
+        }
+
         /// <summary>
         /// Uses Serializable Dictionary packages enumerator. Note use var in a foreach loop, not Path.
         /// </summary>
