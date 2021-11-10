@@ -10,6 +10,9 @@ namespace Puzzle
         public UDictionaryPaths Paths = new UDictionaryPaths();
         public Vector2Int Size { get; private set; } = Vector2Int.zero;
 
+        public List<Vector2Int> StartNodes = new List<Vector2Int>();
+        public List<Vector2Int> EndNodes = new List<Vector2Int>();
+
         #region Dynamics
         /// <summary>
         /// Clears the puzzle's paths

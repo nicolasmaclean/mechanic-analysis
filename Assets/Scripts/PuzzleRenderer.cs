@@ -106,6 +106,17 @@ public class PuzzleRenderer : MonoBehaviour
                 default: continue;
             }
         }
+
+        // draw starting points
+        foreach (Vector2Int startPoint in _puzzle.StartNodes)
+        {
+            DrawStartPoints(startPoint);
+        }
+
+        //foreach (Vector2Int endPoint in _puzzle.StartNodes)
+        //{
+        //    DrawEndPoints();
+        //}
     }
 
     #region coordinate space conversions
@@ -136,9 +147,23 @@ public class PuzzleRenderer : MonoBehaviour
         _spacing.x /= _puzzle.Size.x - 1;
         _spacing.y /= _puzzle.Size.y - 1;
     }
+
     #endregion
 
     #region draw
+    void DrawStartPoints(Vector2Int point)
+    {
+        Vector2[] points = { point, point };
+        LineRenderer line = DrawConnectedStroke(points);
+        line.numCapVertices = 12;
+        line.widthMultiplier *= 2.2f;
+    }
+
+    void DrawEndPoints()
+    {
+
+    }
+
     /// <summary>
     /// Draws a line object upon the given path. Is a wrapper of DrawConnectedStroke().
     /// </summary>
@@ -184,7 +209,8 @@ public class PuzzleRenderer : MonoBehaviour
     /// Draws a line object through the given points.
     /// </summary>
     /// <param name="points"></param>
-    void DrawConnectedStroke(Vector2[] points)
+    /// <returns> The newly created line object </returns>
+    LineRenderer DrawConnectedStroke(Vector2[] points)
     {
         LineRenderer line = Instantiate(_linePrefab, transform.position, transform.rotation, transform).GetComponent<LineRenderer>();
         _lines.Add(line);
@@ -197,6 +223,8 @@ public class PuzzleRenderer : MonoBehaviour
 
         line.positionCount = verts.Length;
         line.SetPositions(verts);
+
+        return line;
     }
 
     /// <summary>
