@@ -7,11 +7,12 @@ namespace Puzzle
     [CreateAssetMenu(menuName = "Scriptable Objects/Puzzle")]
     public class SOPuzzle : ScriptableObject, IEnumerable
     {
+        #region data
         public UDictionaryPaths Paths = new UDictionaryPaths();
         public Vector2Int Size { get; private set; } = Vector2Int.zero;
-
         public List<Vector2Int> StartNodes = new List<Vector2Int>();
         public UDictionaryEndNodes EndNodes = new UDictionaryEndNodes();
+        #endregion
 
         #region Dynamics
         /// <summary>
@@ -67,9 +68,10 @@ namespace Puzzle
         /// <summary>
         /// Finds all corner nodes. A corner is a node with connections that are non-parallel.
         /// In a square grid, these connections would be perpendicular.
+        /// Ignores start nodes, but includes additional paths created for end nodes.
         /// </summary>
         /// <returns>
-        /// The key of the dictionary is node central in the corner
+        /// The key of the dictionary is the node central in the corner
         /// and the array contains its 2 non-parallel neighbors.
         /// </returns>
         public Dictionary<Vector2Int, Vector2Int[]> GetCorners()
@@ -78,6 +80,12 @@ namespace Puzzle
             Dictionary<Vector2Int, Vector2Int[]> corners = new Dictionary<Vector2Int, Vector2Int[]>();
             foreach (KeyValuePair<Vector2Int, List<Path>> node in GetAdjacencyList())
             {
+                // includes paths that will be made for end nodes
+                if (EndNodes.Contains(node.Key))
+                {
+                    node.Value.Add(GetEndPath(node.Key));
+                }
+
                 if (node.Value.Count == 2 && !StartNodes.Contains(node.Key))
                 {
                     // calculates direction vectors
@@ -89,9 +97,9 @@ namespace Puzzle
                     if (!(parallel || antiParallel))
                     {
                         Vector2Int[] corner = {
-                        node.Value[0].p1 == node.Key ? node.Value[0].p2 : node.Value[0].p1,
-                        node.Value[1].p1 == node.Key ? node.Value[1].p2 : node.Value[1].p1
-                    };
+                            node.Value[0].p1 == node.Key ? node.Value[0].p2 : node.Value[0].p1,
+                            node.Value[1].p1 == node.Key ? node.Value[1].p2 : node.Value[1].p1
+                        };
 
                         corners.Add(node.Key, corner);
                     }
@@ -132,37 +140,49 @@ namespace Puzzle
         }
 
         /// <summary>
+        /// Creates a path from the end point to the adjacent node in the direction stored.
+        /// </summary>
+        /// <param name="endPoint"></param>
+        /// <returns> A path between end point and discussed adjacent node, respectively. </returns>
+        public Path GetEndPath(Vector2Int endPoint)
+        {
+            Vector2Int pathDir;
+            switch (EndNodes[endPoint])
+            {
+                case Direction.Down:
+                    pathDir = new Vector2Int(endPoint.x, endPoint.y - 1);
+                    break;
+
+                case Direction.Left:
+                    pathDir = new Vector2Int(endPoint.x - 1, endPoint.y);
+                    break;
+
+                case Direction.Right:
+                    pathDir = new Vector2Int(endPoint.x + 1, endPoint.y);
+                    break;
+
+                default:
+                case Direction.Up:
+                    pathDir = new Vector2Int(endPoint.x, endPoint.y + 1);
+                    break;
+            }
+
+            Path p = new Path(endPoint, pathDir);
+            if (Paths.Contains(p))
+            {
+                throw new System.Exception($"ERROR: unable to create end point {p.p1}. There is an adjacent node at {p.p2}.");
+            }
+
+            return p;
+        }
+
+        /// <summary>
         /// Uses Serializable Dictionary packages enumerator. Note use var in a foreach loop, not Path.
         /// </summary>
         /// <returns></returns>
         public IEnumerator GetEnumerator()
         {
             return Paths.GetEnumerator();
-        }
-
-        /// <summary>
-        /// Prints the puzzle's paths. There is no guarenteed order.
-        /// </summary>
-        /// <returns> returns the paths as a newline delimited string. </returns>
-        public override string ToString()
-        {
-            string output = "";
-
-            foreach (Path path in Paths.Keys)
-            {
-                output += Paths[path] + ": ";
-
-                switch (Paths[path])
-                {
-                    case PathType.Connected:    output += " ----- "; break;
-                    case PathType.Split:        output += " -- -- "; break;
-                    default:                    output += " XXXXX "; break;
-                }
-                
-                output += "\n";
-            }
-
-            return output;
         }
         #endregion
     }
@@ -208,16 +228,19 @@ namespace Puzzle
 
         public override string ToString()
         {
-            return "(" + p1.x + ", " + p1.y + ") --- (" + p2.x + ", " + p2.y + ")";
+            return "(" + p1.x + ", " + p1.y + ") to (" + p2.x + ", " + p2.y + ")";
         }
     }
 
+    #region UDictionaries
     [System.Serializable]
     public class UDictionaryPaths : SerializableDictionary<Path, PathType> { }
 
     [System.Serializable]
     public class UDictionaryEndNodes : SerializableDictionary<Vector2Int, Direction> { }
+    #endregion
 
+    #region enums
     public enum PathType
     {
         NULL = 0,
@@ -227,10 +250,11 @@ namespace Puzzle
     }
 
     /// <summary>
-    /// The integer equivalent to each values are picked, so a sum of a direction and 2 times another direction is unique
+    /// The integer equivalent to each values are picked, so a sum of a direction and 2 times another direction is a unique integer
     /// </summary>
     public enum Direction
     {
         NULL = -1, Up = 0, Down = 3, Right = 9, Left = 27
     }
+    #endregion
 };

@@ -16,7 +16,7 @@ public class PuzzleRenderer : MonoBehaviour
     [SerializeField]
     float _lineWidth = 0.6f;
 
-    [Tooltip("The proportional length of the goal point in relation to the length of a connected path.")]
+    [Tooltip("The distance of the end nub from the end node proportional to the length of a path.")]
     [SerializeField, Range(0, 1)]
     float _endLength = .2f;
 
@@ -72,39 +72,25 @@ public class PuzzleRenderer : MonoBehaviour
     }
 
     /// <summary>
-    /// Creates line prefabs to display the given puzzle. Will reset the line renderer.
+    /// Creates line prefabs to display the given puzzle. Will reset the line renderer. Will skip null paths.
     /// </summary>
     void CreatePuzzle()
     {
         Clearlines();
         UpdatePuzzleToLocalLogic();
 
-        List<Path> endPaths = new List<Path>();
+        Dictionary<Vector2Int, Vector2Int[]> corners = _puzzle.GetCorners();
 
         // draw end points
         foreach (KeyValuePair<Vector2Int, Direction> pair in _puzzle.EndNodes)
         {
-            Vector2Int pathDir;
-            switch (pair.Value)
-            {
-                case Direction.Up:    pathDir = new Vector2Int(pair.Key.x, pair.Key.y + 1); break;
-                case Direction.Down:  pathDir = new Vector2Int(pair.Key.x, pair.Key.y - 1); break;
-                case Direction.Left:  pathDir = new Vector2Int(pair.Key.x - 1, pair.Key.y); break;
-                default:
-                case Direction.Right: pathDir = new Vector2Int(pair.Key.x + 1, pair.Key.y); break;
-            }
-
-            Path p = new Path(pair.Key, pathDir);
-            endPaths.Add(p);
-            _puzzle.Paths.Add(p, PathType.End);
+            DrawEndPoint(pair.Key);
         }
-
-        Dictionary<Vector2Int, Vector2Int[]> corners = _puzzle.GetCorners();
 
         // draw starting points
         foreach (Vector2Int startPoint in _puzzle.StartNodes)
         {
-            DrawStartPoints(startPoint);
+            DrawStartPoint(startPoint);
         }
 
         // draw nodes
@@ -125,7 +111,7 @@ public class PuzzleRenderer : MonoBehaviour
                 DrawRoundedCorner(pos, GetCornerAngle(stroke));
             }
             // draw default (sharp) corner
-            else if (!endPaths.Contains(node.Value[0]))
+            else
             {
                 DrawSharpCorner(pos);
             }
@@ -147,24 +133,14 @@ public class PuzzleRenderer : MonoBehaviour
                     DrawSplitPath(path);
                     break;
 
-                case PathType.End:
-                    DrawEndPoint(path);
-                    break;
-
                 default: continue;
             }
-        }
-
-        // removes temporary paths used to draw end nodes
-        foreach (Path path in endPaths)
-        {
-            _puzzle.Paths.Remove(path);
         }
     }
 
     #region coordinate space conversions
     /// <summary>
-    /// Converts from local space to puzzle space. The coordinate will be expand/shrink
+    /// Converts from puzzle space to local space. The coordinate will be expand/shrink
     /// from 0 according to the puzzle size, margin, and nodes in the puzzle.
     /// </summary>
     /// <param name="pos"></param>
@@ -194,15 +170,30 @@ public class PuzzleRenderer : MonoBehaviour
         _spacing.y = Mathf.Min(_spacing.x, _spacing.y);
     }
 
-    Quaternion GetLineRotation(Vector3 start, Vector3 end)
+    /// <summary>
+    /// Gets the rotation of line relative to the direction of the puzzle and Vector3.Up
+    /// </summary>
+    /// <param name="start"></param>
+    /// <param name="end"></param>
+    /// <returns></returns>
+    Quaternion GetLineRotation(Vector2 start, Vector2 end)
     {
-        Vector3 dir = end - start;
-        float angle = Vector3.SignedAngle(Vector3.up, dir, transform.forward);
-        return Quaternion.Euler(0, 0, angle);
+        return Quaternion.Euler(0, 0, Vector2.SignedAngle(transform.up, end - start));
     }
 
     /// <summary>
-    /// Gets the stroke direction from start towards end
+    /// Returns the distance from p1 to p2
+    /// </summary>
+    /// <param name="p1"></param>
+    /// <param name="p2"></param>
+    /// <returns></returns>
+    float GetLineLength(Vector3 p1, Vector3 p2)
+    {
+        return (p2 - p1).magnitude;
+    }
+
+    /// <summary>
+    /// Gets the stroke direction from start towards end. Will return Direction.NULL if the stroke is not along a cardinal direction.
     /// </summary>
     /// <param name="start"></param>
     /// <param name="end"></param>
@@ -240,7 +231,7 @@ public class PuzzleRenderer : MonoBehaviour
     }
 
     /// <summary>
-    /// Gets the z-rotation needed to draw a rounded corner for the given stroke. Assumes angle=0 when the corner goes in north and out west.
+    /// Gets the z-rotation (in degrees) needed to draw a rounded corner for the given stroke. Assumes angle=0 when the corner goes in north and out west.
     /// </summary>
     /// <param name="stroke"></param>
     /// <returns></returns>
@@ -248,8 +239,7 @@ public class PuzzleRenderer : MonoBehaviour
     {
         if (stroke.Length != 3)
         {
-            Debug.LogError("ERROR: unable to get corner angle. Stroke should have 3 points");
-            return 0;
+            throw new System.Exception("ERROR: unable to get corner angle. Stroke should have 3 points");
         }
 
         float angle;
@@ -286,21 +276,29 @@ public class PuzzleRenderer : MonoBehaviour
     }
     #endregion
 
-    #region draw
-    void DrawStartPoints(Vector2Int point)
+    #region Drawing
+    /// <summary>
+    /// Creates the start point visual
+    /// </summary>
+    /// <param name="point"></param>
+    /// <returns> a reference to the created visual </returns>
+    GameObject DrawStartPoint(Vector2Int point)
     {
         Vector3 pos = PuzzleToLocal(point);
         GameObject go = Instantiate(_startPrefab, transform);
 
         go.transform.localPosition = pos;
         go.transform.localScale = new Vector3(_lineWidth, _lineWidth, _lineWidth);
+
+        return go;
     }
 
     /// <summary>
-    /// Draws a line object upon the given path. Is a wrapper of DrawConnectedStroke().
+    /// Creates a line object upon the given path
     /// </summary>
     /// <param name="path"></param>
-    void DrawConnectedPath(Path path)
+    /// <returns> A reference to the created visual </returns>
+    GameObject DrawConnectedPath(Path path)
     {
         Vector2[] points =
         {
@@ -310,14 +308,15 @@ public class PuzzleRenderer : MonoBehaviour
 
         ShortenStroke(ref points, true, _lineWidth / 2);
         ShortenStroke(ref points, false, _lineWidth / 2);
-        DrawConnectedStroke(points);
+        return DrawConnectedStroke(points[0], points[1]);
     }
 
     /// <summary>
-    /// Draws a split path with the _splitGap proportional gap in the middle.
+    /// Creates line objects along the given path with _splitGap space in the middle
     /// </summary>
     /// <param name="path"></param>
-    void DrawSplitPath(Path path)
+    /// <returns> References to created visuals </returns>
+    GameObject[] DrawSplitPath(Path path)
     {
         Vector2[] stroke1 =
         {
@@ -332,10 +331,20 @@ public class PuzzleRenderer : MonoBehaviour
         ShortenStroke(ref stroke1, true, _lineWidth / 2);
         ShortenStroke(ref stroke2, true, _lineWidth / 2);
 
-        DrawConnectedStroke(stroke1);
-        DrawConnectedStroke(stroke2);
+        GameObject[] gos = {
+            DrawConnectedStroke(stroke1[0], stroke1[1]),
+            DrawConnectedStroke(stroke2[0], stroke2[1])
+        };
+
+        return gos;
     }
 
+    /// <summary>
+    /// Creates a rounded corner at the given point with given rotation
+    /// </summary>
+    /// <param name="point"></param>
+    /// <param name="angle"></param>
+    /// <returns> A reference to the created visual </returns>
     GameObject DrawRoundedCorner(Vector2Int point, float angle)
     {
         GameObject go = Instantiate(_cornerPrefab, transform);
@@ -348,10 +357,10 @@ public class PuzzleRenderer : MonoBehaviour
     }
 
     /// <summary>
-    /// Draws a square around the given point of length _lineWidth.
+    /// Creates a square around the given point of length _lineWidth.
     /// </summary>
     /// <param name="point"></param>
-    /// <returns></returns>
+    /// <returns> A reference to the created visual </returns>
     GameObject DrawSharpCorner(Vector2 point)
     {
         Vector3 bottom = PuzzleToLocal(point);
@@ -364,73 +373,72 @@ public class PuzzleRenderer : MonoBehaviour
         return go;
     }
 
-    GameObject[] DrawEndPoint(Path path)
+    /// <summary>
+    /// Creates a line from the end node in its appropriate direction with an end cap.
+    /// </summary>
+    /// <param name="pos"></param>
+    /// <returns> References to the created visuals </returns>
+    GameObject[] DrawEndPoint(Vector2Int pos)
     {
         Vector2[] stroke =
         {
-            path.p1,
-            Vector2.Lerp(path.p1, path.p2, _endLength)
+            pos,
+            Vector2.Lerp(pos, _puzzle.GetEndPath(pos).p2, _endLength)
         };
         ShortenStroke(ref stroke, true, _lineWidth / 2);
 
         GameObject[] _lines =
         {
-            DrawConnectedStroke(stroke),
-            Instantiate(_capPrefab, PuzzleToLocal(stroke[1]), Quaternion.identity, transform)
+            DrawConnectedStroke(stroke[0], stroke[1]),
+            Instantiate(_capPrefab, transform)
         };
 
-        float angle = Vector2.SignedAngle(transform.up, path.p2 - path.p1);
-        _lines[1].transform.rotation = Quaternion.Euler(0, 0, angle);
+        // adjusts the end cap's transform
+        _lines[1].transform.localPosition = PuzzleToLocal(stroke[1]);
+        _lines[1].transform.localRotation = GetLineRotation(stroke[0], stroke[1]);
         _lines[1].transform.localScale = new Vector3(_lineWidth, _lineWidth, _lineWidth);
 
         return _lines;
     }
 
     /// <summary>
-    /// Draws Quad at the given point for the given length
+    /// Creates a quad that spans the given 2 points
     /// </summary>
     /// <param name="points"> An array of 2 vector2 objects for the line to begin and end at. </param>
-    /// <returns> The newly created line object </returns>
-    GameObject DrawConnectedStroke(Vector2[] points)
+    /// <returns> A reference to the created visual </returns>
+    GameObject DrawConnectedStroke(Vector2 start, Vector2 end)
     {
-        if (points.Length != 2)
-        {
-            Debug.LogError("ERROR: unable to draw line with " + points.Length + " verts.");
-        }
-
         GameObject go = Instantiate(_quadPrefab, transform);
-        _lines.Add(go);
 
         // set position
-        Vector3 pos = PuzzleToLocal(points[0]);
-        Vector3 end = PuzzleToLocal(points[1]);
-        go.transform.localPosition = pos;
+        Vector3 worldStart = PuzzleToLocal(start);
+        Vector3 worldEnd = PuzzleToLocal(end);
+        go.transform.localPosition = worldStart;
 
         // set rotation
-        go.transform.localRotation = GetLineRotation(pos, end);
+        go.transform.localRotation = GetLineRotation(start, end);
 
         // set scale
         Vector3 scal = Vector3.one;
         scal.x = _lineWidth;
-        scal.y = (end - pos).magnitude;
+        scal.y = GetLineLength(worldStart, worldEnd);
         go.transform.localScale = scal;
 
         return go;
     }
 
     /// <summary>
-    /// Moves the desired point to shorten the stroke proportional to the line width.
+    /// Moves the desired point to shorten the stroke.
     /// The point internal to that being manipulated will not be affected.
     /// This operation will consider local and puzzle space.
     /// </summary>
-    /// <param name="stroke"> The puzzle space coordinates of a stroke. True is the first point in the stroke. </param>
-    /// <param name="first"> Selects which end of the stroke to manipulate. </param>
+    /// <param name="stroke"> The puzzle space coordinates of a stroke. </param>
+    /// <param name="first"> Selects which end of the stroke to manipulate. True will manipulate stroke[0] </param>
     void ShortenStroke(ref Vector2[] stroke, bool first, float amount)
     {
         if (stroke.Length < 2)
         {
-            Debug.LogError("Unable to shorten stroke: the given stroke is too short.");
-            return;
+            throw new System.Exception("Unable to shorten stroke: the given stroke is too short.");
         }
 
         Vector2 dir;
