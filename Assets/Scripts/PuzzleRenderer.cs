@@ -16,6 +16,10 @@ public class PuzzleRenderer : MonoBehaviour
     [SerializeField]
     float _lineWidth = 0.6f;
 
+    [Tooltip("The proportional length of the goal point in relation to the length of a connected path.")]
+    [SerializeField, Range(0, 1)]
+    float _endLength = .2f;
+
     [Tooltip("The width and width (in world space) of the puzzle.")]
     [SerializeField]
     Vector2 _size = new Vector2(2, 2);
@@ -80,30 +84,31 @@ public class PuzzleRenderer : MonoBehaviour
         // draw end points
         foreach (KeyValuePair<Vector2Int, Direction> pair in _puzzle.EndNodes)
         {
-            Path p = new Path(pair.Key, new Vector2Int(pair.Key.x, pair.Key.y+1));
+            Vector2Int pathDir;
+            switch (pair.Value)
+            {
+                case Direction.Up:    pathDir = new Vector2Int(pair.Key.x, pair.Key.y + 1); break;
+                case Direction.Down:  pathDir = new Vector2Int(pair.Key.x, pair.Key.y - 1); break;
+                case Direction.Left:  pathDir = new Vector2Int(pair.Key.x - 1, pair.Key.y); break;
+                default:
+                case Direction.Right: pathDir = new Vector2Int(pair.Key.x + 1, pair.Key.y); break;
+            }
+
+            Path p = new Path(pair.Key, pathDir);
+            endPaths.Add(p);
             _puzzle.Paths.Add(p, PathType.End);
-            DrawEndPoint();
         }
 
         Dictionary<Vector2Int, Vector2Int[]> corners = _puzzle.GetCorners();
-        Dictionary<Vector2Int, List<Path>> nodes = _puzzle.GetAdjacencyList();
-        UDictionaryPaths paths = _puzzle.Paths;
 
         // draw starting points
         foreach (Vector2Int startPoint in _puzzle.StartNodes)
         {
-            // prevent corner from being created under start point
-            if (corners.ContainsKey(startPoint))
-            {
-                corners.Remove(startPoint);
-            }
-
             DrawStartPoints(startPoint);
         }
 
-
         // draw nodes
-        foreach (KeyValuePair<Vector2Int, List<Path>> node in nodes)
+        foreach (KeyValuePair<Vector2Int, List<Path>> node in _puzzle.GetAdjacencyList())
         {
             Vector2Int pos = node.Key;
 
@@ -120,14 +125,14 @@ public class PuzzleRenderer : MonoBehaviour
                 DrawRoundedCorner(pos, GetCornerAngle(stroke));
             }
             // draw default (sharp) corner
-            else
+            else if (!endPaths.Contains(node.Value[0]))
             {
                 DrawSharpCorner(pos);
             }
         }
 
         // draw paths
-        foreach (KeyValuePair<Path, PathType> entry in paths)
+        foreach (KeyValuePair<Path, PathType> entry in _puzzle)
         {
             Path path = entry.Key;
             PathType connection = entry.Value;
@@ -140,6 +145,10 @@ public class PuzzleRenderer : MonoBehaviour
 
                 case PathType.Split:
                     DrawSplitPath(path);
+                    break;
+
+                case PathType.End:
+                    DrawEndPoint(path);
                     break;
 
                 default: continue;
@@ -180,6 +189,9 @@ public class PuzzleRenderer : MonoBehaviour
 
         _spacing.x /= _puzzle.Size.x - 1;
         _spacing.y /= _puzzle.Size.y - 1;
+
+        _spacing.x = Mathf.Min(_spacing.x, _spacing.y);
+        _spacing.y = Mathf.Min(_spacing.x, _spacing.y);
     }
 
     Quaternion GetLineRotation(Vector3 start, Vector3 end)
@@ -303,7 +315,6 @@ public class PuzzleRenderer : MonoBehaviour
 
     /// <summary>
     /// Draws a split path with the _splitGap proportional gap in the middle.
-    /// TODO: this needs to combine with corner logic
     /// </summary>
     /// <param name="path"></param>
     void DrawSplitPath(Path path)
@@ -353,15 +364,26 @@ public class PuzzleRenderer : MonoBehaviour
         return go;
     }
 
-    GameObject DrawEndPoint(Path path)
+    GameObject[] DrawEndPoint(Path path)
     {
-        // this doesn't work
         Vector2[] stroke =
         {
             path.p1,
-            path.p2
+            Vector2.Lerp(path.p1, path.p2, _endLength)
         };
-        return CreatePrefab(stroke, _capPrefab);
+        ShortenStroke(ref stroke, true, _lineWidth / 2);
+
+        GameObject[] _lines =
+        {
+            DrawConnectedStroke(stroke),
+            Instantiate(_capPrefab, PuzzleToLocal(stroke[1]), Quaternion.identity, transform)
+        };
+
+        float angle = Vector2.SignedAngle(transform.up, path.p2 - path.p1);
+        _lines[1].transform.rotation = Quaternion.Euler(0, 0, angle);
+        _lines[1].transform.localScale = new Vector3(_lineWidth, _lineWidth, _lineWidth);
+
+        return _lines;
     }
 
     /// <summary>
@@ -371,17 +393,12 @@ public class PuzzleRenderer : MonoBehaviour
     /// <returns> The newly created line object </returns>
     GameObject DrawConnectedStroke(Vector2[] points)
     {
-        return CreatePrefab(points, _quadPrefab);
-    }
-
-    GameObject CreatePrefab(Vector2[] points, GameObject prefab)
-    {
         if (points.Length != 2)
         {
             Debug.LogError("ERROR: unable to draw line with " + points.Length + " verts.");
         }
 
-        GameObject go = Instantiate(prefab, transform);
+        GameObject go = Instantiate(_quadPrefab, transform);
         _lines.Add(go);
 
         // set position
@@ -439,12 +456,6 @@ public class PuzzleRenderer : MonoBehaviour
             int lastI = stroke.Length - 1;
             stroke[lastI] -= dir;
         }
-    }
-
-    // wrapper of shorten stroke.
-    void LengthenStroke(ref Vector2[] stroke, bool first, float amount)
-    {
-        ShortenStroke(ref stroke, first, -amount);
     }
 
     /// <summary>

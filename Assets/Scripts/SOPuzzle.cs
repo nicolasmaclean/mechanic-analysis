@@ -78,7 +78,7 @@ namespace Puzzle
             Dictionary<Vector2Int, Vector2Int[]> corners = new Dictionary<Vector2Int, Vector2Int[]>();
             foreach (KeyValuePair<Vector2Int, List<Path>> node in GetAdjacencyList())
             {
-                if (node.Value.Count == 2)
+                if (node.Value.Count == 2 && !StartNodes.Contains(node.Key))
                 {
                     // calculates direction vectors
                     Vector2 dir1 = node.Value[0].GetDirection();
