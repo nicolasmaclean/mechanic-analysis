@@ -11,7 +11,7 @@ namespace Puzzle
         public Vector2Int Size { get; private set; } = Vector2Int.zero;
 
         public List<Vector2Int> StartNodes = new List<Vector2Int>();
-        public List<Vector2Int> EndNodes = new List<Vector2Int>();
+        public UDictionaryEndNodes EndNodes = new UDictionaryEndNodes();
 
         #region Dynamics
         /// <summary>
@@ -76,17 +76,10 @@ namespace Puzzle
         {
             // search nodes for corners
             Dictionary<Vector2Int, Vector2Int[]> corners = new Dictionary<Vector2Int, Vector2Int[]>();
-            foreach (KeyValuePair<Vector2Int, List<Path>> node in GetAdjacencyMatrix())
+            foreach (KeyValuePair<Vector2Int, List<Path>> node in GetAdjacencyList())
             {
                 if (node.Value.Count == 2)
                 {
-                    // ignores corners that have a split connection.
-                    // due to limitations of LineRenderer this can not be represented.
-                    if (Paths[node.Value[0]] == PathType.Split || Paths[node.Value[1]] == PathType.Split)
-                    {
-                        continue;
-                    }
-
                     // calculates direction vectors
                     Vector2 dir1 = node.Value[0].GetDirection();
                     Vector2 dir2 = node.Value[1].GetDirection();
@@ -112,7 +105,7 @@ namespace Puzzle
         /// Creates and returns the adjacency matrix of the puzzle.
         /// </summary>
         /// <returns></returns>
-        public Dictionary<Vector2Int, List<Path>> GetAdjacencyMatrix()
+        public Dictionary<Vector2Int, List<Path>> GetAdjacencyList()
         {
             Dictionary<Vector2Int, List<Path>> nodes = new Dictionary<Vector2Int, List<Path>>();
             foreach (KeyValuePair<Path, PathType> pair in this)
@@ -222,10 +215,22 @@ namespace Puzzle
     [System.Serializable]
     public class UDictionaryPaths : SerializableDictionary<Path, PathType> { }
 
+    [System.Serializable]
+    public class UDictionaryEndNodes : SerializableDictionary<Vector2Int, Direction> { }
+
     public enum PathType
     {
         NULL = 0,
         Connected = 1,
-        Split = 2
+        Split = 2,
+        End = 3
+    }
+
+    /// <summary>
+    /// The integer equivalent to each values are picked, so a sum of a direction and 2 times another direction is unique
+    /// </summary>
+    public enum Direction
+    {
+        NULL = -1, Up = 0, Down = 3, Right = 9, Left = 27
     }
 };
