@@ -54,7 +54,7 @@ public class PuzzleRenderer : MonoBehaviour
     #endregion
 
     #region Private Variables
-    List<GameObject> _lines;
+    List<GameObject> _lineSegments;
     Vector2 _spacing;
     #endregion
 
@@ -78,9 +78,9 @@ public class PuzzleRenderer : MonoBehaviour
     /// <summary>
     /// Creates line prefabs to display the given puzzle. Will reset the line renderer. Will skip null paths.
     /// </summary>
-    void CreatePuzzle()
+    public void CreatePuzzle()
     {
-        Clearlines();
+        ClearLines();
         UpdatePuzzleToLocalLogic();
 
         Dictionary<Vector2Int, Vector2Int[]> corners = _puzzle.GetCorners();
@@ -88,18 +88,23 @@ public class PuzzleRenderer : MonoBehaviour
         // draw end points
         foreach (KeyValuePair<Vector2Int, Direction> pair in _puzzle.EndNodes)
         {
-            DrawEndPoint(pair.Key);
+            GameObject[] lineSegments = DrawEndPoint(pair.Key);
+            foreach (GameObject segment in lineSegments)
+            {
+                _lineSegments.Add(segment);
+            }
         }
 
         // draw starting points
         foreach (Vector2Int startPoint in _puzzle.StartNodes)
         {
-            DrawStartPoint(startPoint);
+            _lineSegments.Add(DrawStartPoint(startPoint));
         }
 
         // draw nodes
         foreach (KeyValuePair<Vector2Int, List<Path>> node in _puzzle.GetAdjacencyList())
         {
+            GameObject segment;
             Vector2Int pos = node.Key;
 
             // draw rounded corner
@@ -112,13 +117,15 @@ public class PuzzleRenderer : MonoBehaviour
                     corners[pos][1]
                 };
 
-                DrawRoundedCorner(pos, GetCornerAngle(stroke));
+                segment = DrawRoundedCorner(pos, GetCornerAngle(stroke));
             }
             // draw default (sharp) corner
             else
             {
-                DrawSharpCorner(pos);
+                segment = DrawSharpCorner(pos);
             }
+
+            _lineSegments.Add(segment);
         }
 
         // draw paths
@@ -130,11 +137,15 @@ public class PuzzleRenderer : MonoBehaviour
             switch (connection)
             {
                 case PathType.Connected:
-                    DrawConnectedPath(path);
+                    _lineSegments.Add(DrawConnectedPath(path));
                     break;
 
                 case PathType.Split:
-                    DrawSplitPath(path);
+                    GameObject[] lineSegments = DrawSplitPath(path);
+                    foreach (GameObject segment in lineSegments)
+                    {
+                        _lineSegments.Add(segment);
+                    }
                     break;
 
                 default: continue;
@@ -473,17 +484,17 @@ public class PuzzleRenderer : MonoBehaviour
     /// <summary>
     /// Deletes current line renderers and removes their references.
     /// </summary>
-    void Clearlines()
+    public void ClearLines()
     {
-        if (_lines != null)
+        if (_lineSegments != null)
         {
-            foreach (GameObject line in _lines)
+            foreach (GameObject line in _lineSegments)
             {
-                Destroy(line);
+                DestroyImmediate(line);
             }
         }
 
-        _lines = new List<GameObject>();
+        _lineSegments = new List<GameObject>();
     }
     #endregion
 
