@@ -7,6 +7,14 @@ using Puzzle;
 public class PuzzleRenderer : MonoBehaviour
 {
     #region Exposed Variables
+    [Tooltip("The width and width (in world space) of the puzzle.")]
+    [SerializeField]
+    Vector2 _size = new Vector2(2, 2);
+
+    [Tooltip("Margin size (in world space) between border of puzzle bounds and the lines within.")]
+    [SerializeField]
+    float _margin = .25f;
+
     [Header("Configuration")]
     [Tooltip("The size of the gap in the middle of a split connection. Value is directly proportional to the length of the connection.")]
     [SerializeField, Range(0, 1)]
@@ -20,13 +28,9 @@ public class PuzzleRenderer : MonoBehaviour
     [SerializeField, Range(0, 1)]
     float _endLength = .2f;
 
-    [Tooltip("The width and width (in world space) of the puzzle.")]
+    [Tooltip("The size of the start node.")]
     [SerializeField]
-    Vector2 _size = new Vector2(2, 2);
-
-    [Tooltip("Margin size (in world space) between border of puzzle bounds and the lines within.")]
-    [SerializeField]
-    float _margin = .25f;
+    float _startNodeSize = 1f;
 
     [Header("Data")]
     [SerializeField] SOPuzzle _puzzle;
@@ -288,7 +292,7 @@ public class PuzzleRenderer : MonoBehaviour
         GameObject go = Instantiate(_startPrefab, transform);
 
         go.transform.localPosition = pos;
-        go.transform.localScale = new Vector3(_lineWidth, _lineWidth, _lineWidth);
+        go.transform.localScale = new Vector3(_lineWidth * _startNodeSize, _lineWidth * _startNodeSize, _lineWidth * _startNodeSize);
 
         return go;
     }

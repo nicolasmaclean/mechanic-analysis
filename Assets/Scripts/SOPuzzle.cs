@@ -33,7 +33,7 @@ namespace Puzzle
         /// Parses the puzzle entries to update Size.
         /// The min node is assumed to be 0.
         /// </summary>
-        void UpdateSize()
+        public void UpdateSize()
         {
             Vector2Int max = Vector2Int.zero;
             foreach (KeyValuePair<Path, PathType> entry in this)
