@@ -140,6 +140,33 @@ namespace Puzzle
         }
 
         /// <summary>
+        ///     Creates a normalized vector corresponding to the requested direction
+        /// </summary>
+        /// <param name="dir"></param>
+        /// <returns> The normalized direction vector. Return Vector2.zero if direction is NULL. </returns>
+        public static Vector2 GetDirectionVector(Direction dir)
+        {
+            switch (dir)
+            {
+                case Direction.Up:
+                    return Vector2.up;
+
+                case Direction.Down:
+                    return Vector2.down;
+
+                case Direction.Right:
+                    return Vector2.right;
+
+                case Direction.Left:
+                    return Vector2.left;
+
+                default:
+                case Direction.NULL:
+                    return Vector2.zero;
+            }
+        }
+
+        /// <summary>
         /// Creates a path from the end point to the adjacent node in the direction stored.
         /// </summary>
         /// <param name="endPoint"></param>
@@ -224,11 +251,6 @@ namespace Puzzle
             hashCode = hashCode * -1521134295 + p1.GetHashCode();
             hashCode = hashCode * -1521134295 + p2.GetHashCode();
             return hashCode;
-        }
-
-        public override string ToString()
-        {
-            return "(" + p1.x + ", " + p1.y + ") to (" + p2.x + ", " + p2.y + ")";
         }
     }
 

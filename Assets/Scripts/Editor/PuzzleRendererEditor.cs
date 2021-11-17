@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEditor;
+using Puzzle;
 
 [CustomEditor(typeof(PuzzleRenderer))]
 public class PuzzleRendererEditor : Editor
