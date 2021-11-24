@@ -323,6 +323,23 @@ namespace Puzzle
         {
             return _puzzle.StartNodes.Contains(new Vector2Int((int) point.x, (int) point.y));
         }
+
+        /// <summary>
+        ///     Returns the direction of the end point. If not an end point returns Direction.NULL
+        /// </summary>
+        /// <param name="point"></param>
+        /// <returns></returns>
+        public Direction GetEndPoint(Vector2 point)
+        {
+            if (_puzzle.EndNodes.Contains(new Vector2Int((int)point.x, (int)point.y)))
+            {
+                return _puzzle.EndNodes[new Vector2Int((int) point.x, (int) point.y)];
+            }
+            else
+            {
+                return Direction.NULL;
+            }
+        }
         #endregion
 
         #region Editor

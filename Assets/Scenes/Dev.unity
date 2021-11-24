@@ -201,6 +201,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   State: 0
   _intersectionSize: 0.5
+  _endSize: 0.05
 --- !u!4 &289359400
 Transform:
   m_ObjectHideFlags: 0

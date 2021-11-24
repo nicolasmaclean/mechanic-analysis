@@ -18,6 +18,10 @@ namespace Puzzle
         [Tooltip("Multiplier to the intersection bounding-box. Value of 1 will default bounding-box to the line width.")]
         [SerializeField]
         float _intersectionSize = .5f;
+
+        [Tooltip("The radius of the end point used to calculate when the player has reached the end.")]
+        [SerializeField]
+        float _endSize = 0.05f;
         #endregion
 
         #region Private Variables
@@ -40,6 +44,9 @@ namespace Puzzle
         Vector2 _position;
         Vector2Int _intersection;
         Vector2Int _targetPosition;
+        bool _targetIsEnd;
+
+        bool _atEnd = false;
         #endregion
 
         #region Monobehaviours
@@ -119,7 +126,40 @@ namespace Puzzle
         {
             _intersection = coord;
             _atIntersection = true;
-            _neighbors = _puzzle.GetAdjacency()[_intersection];
+
+            List<Vector2Int> _referenceToNeighbors = _puzzle.GetAdjacency()[_intersection];
+            _neighbors = new List<Vector2Int>();
+            foreach (Vector2Int neighbor in _referenceToNeighbors)
+            {
+                _neighbors.Add(neighbor);
+            }
+
+            Direction dir = _puzzle.GetEndPoint(coord);
+            if (dir != Direction.NULL)
+            {
+                Vector2Int directionVector = Vector2Int.zero;
+                switch (dir)
+                {
+                    case Direction.Up:
+                        directionVector.y++;
+                        break;
+
+                    case Direction.Right:
+                        directionVector.x++;
+                        break;
+
+                    case Direction.Down:
+                        directionVector.y--;
+                        break;
+
+                    default:
+                    case Direction.Left:
+                        directionVector.x--;
+                        break;
+                }
+
+                _neighbors.Add(_intersection + directionVector);
+            }
         }
 
         /// <summary>
@@ -142,6 +182,15 @@ namespace Puzzle
             _targetPosition = _intersection + direction;
             _playerPath.SetMarker(_intersection, _targetPosition);
             _atIntersection = false;
+
+            if (_puzzle.GetEndPoint(_intersection) != Direction.NULL && !_puzzle.GetAdjacency()[_intersection].Contains(_targetPosition))
+            {
+                _targetIsEnd = true;
+            }
+            else
+            {
+                _targetIsEnd = false;
+            }
         }
 
         /// <summary>
@@ -306,11 +355,21 @@ namespace Puzzle
             return Mathf.Abs(point.x - center.x) < radius && Mathf.Abs(point.y - center.y) < radius;
         }
 
+        /// <summary>
+        ///     Clamps the position between start and end.
+        ///     Considers path and node types.
+        /// </summary>
+        /// <param name="position"></param>
+        /// <param name="start"></param>
+        /// <param name="end"></param>
+        /// <returns></returns>
         Vector2 ClampToPath(Vector2 position, Vector2 start, Vector2 end)
         {
             // clamp between start and end
             Vector3 projection = Vector3.Project(position - start, end - start);
             Vector2 clamped = new Vector2(projection.x, projection.y);
+
+            bool resetEnd = true;
 
             // case: split path requires earlier clamping
             if (_puzzle.GetPathType(start, end) == PathType.Split)
@@ -331,6 +390,25 @@ namespace Puzzle
                     maxLen = 1 - _puzzleLineWidth;
                 }
                 clamped = Vector2.ClampMagnitude(clamped, maxLen);
+            }
+            // case: stop at end
+            else if (_targetIsEnd)
+            {
+                float maxLen = _puzzle.configs.endLength + _puzzleLineWidth / 2;
+                float len = clamped.magnitude;
+
+                if (len > maxLen - _endSize)
+                {
+                    _atEnd = true;
+                    resetEnd = false;
+                }
+
+                clamped = Vector2.ClampMagnitude(clamped, maxLen);
+            }
+
+            if (resetEnd)
+            {
+                _atEnd = false;
             }
 
             clamped += start;
@@ -377,7 +455,7 @@ namespace Puzzle
         }
 
         /// <summary>
-        ///     Subscribes to VirualMouse C# events
+        ///     Subscribes to VirtualMouse C# events
         /// </summary>
         void SubscribeToEvents()
         {
@@ -387,7 +465,7 @@ namespace Puzzle
         }
 
         /// <summary>
-        ///     Unsubscribes to VirualMouse C# events
+        ///     Unsubscribes to VirtualMouse C# events
         /// </summary>
         private void UnsubscribeToEvents()
         {
