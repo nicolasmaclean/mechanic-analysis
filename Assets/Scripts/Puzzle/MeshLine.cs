@@ -41,6 +41,38 @@ public class MeshLine : MonoBehaviour
         return DrawEndCap(configs.capPrefab, parent, pos, configs.lineWidth, angle);
     }
 
+    /// <summary>
+    ///     Draws a series of rouneded lines through the given verts. Will also create a start point at the first vert.
+    /// </summary>
+    /// <param name="configs"></param>
+    /// <param name="parent"></param>
+    /// <param name="verts"></param>
+    /// <returns></returns>
+    public static GameObject[] DrawStroke(in PuzzleConfigs configs, Transform parent, Vector3[] verts)
+    {
+
+        if (verts.Length > 0)
+        {
+            GameObject[] gos = new GameObject[1 + 2 * verts.Length];
+
+            Vector3 prev = verts[0];
+            gos[0] = DrawStartPoint(configs, parent, prev);
+
+            for (int i = 1; i < verts.Length; i++)
+            {
+                GameObject[] lineGos = DrawLineRounded(configs, parent, prev, verts[i], false, true);
+                gos[1 + i * 2] = lineGos[0];
+                gos[2 + i * 2] = lineGos[2];
+
+                prev = verts[i];
+            }
+
+            return gos;
+        }
+
+        return new GameObject[0];
+    }
+
     public static GameObject DrawLine(in PuzzleConfigs configs, Transform parent, Vector3 start, Vector3 end)
     {
         return DrawLine(configs.quadPrefab, parent, start, end, configs.lineWidth);
@@ -207,13 +239,7 @@ public class MeshLine : MonoBehaviour
     /// <returns> Reference to the created visuals </returns>
     public static GameObject DrawEndCap(GameObject prefab, Transform parent, Vector3 pos, float lineWidth, float angle)
     {
-        GameObject go = Instantiate(prefab, parent);
-
-        go.transform.localPosition = pos;
-        go.transform.localRotation = Quaternion.Euler(0, 0, angle);
-        go.transform.localScale = new Vector3(lineWidth, lineWidth, lineWidth);
-
-        return go;
+        return DrawEndCap(prefab, parent, pos, lineWidth, Quaternion.Euler(0, 0, angle));
     }
 
     /// <summary>
@@ -259,7 +285,7 @@ public class MeshLine : MonoBehaviour
         // set scale
         Vector3 scal = Vector3.one;
         scal.x = lineWidth;
-        scal.y = GetLineLength(start, end);
+        scal.y = Vector3.Distance(end, start);
         go.transform.localScale = scal;
 
         return go;
@@ -268,24 +294,13 @@ public class MeshLine : MonoBehaviour
 
     #region Utility
     /// <summary>
-    ///     Calculates the distance between the given points
-    /// </summary>
-    /// <param name="p1"></param>
-    /// <param name="p2"></param>
-    /// <returns> The float value distance </returns>
-    static float GetLineLength(Vector3 p1, Vector3 p2)
-    {
-        return (p2 - p1).magnitude;
-    }
-
-    /// <summary>
     ///     Calculates the rotation between the start and end.
     /// </summary>
     /// <param name="start"></param>
     /// <param name="end"></param>
     /// <param name="up"></param>
     /// <returns> The quaternion representation of the calculated direction vector. </returns>
-    static Quaternion GetLineRotation(Vector2 start, Vector2 end, Vector2 up)
+    public static Quaternion GetLineRotation(Vector2 start, Vector2 end, Vector2 up)
     {
         return Quaternion.Euler(0, 0, Vector2.SignedAngle(up, end - start));
     }
@@ -297,7 +312,7 @@ public class MeshLine : MonoBehaviour
     /// <param name="stroke"> The local space coordinates of a stroke </param>
     /// <param name="amount"> The amount to shorten the stroke by in local space </param>
     /// <param name="first"> Selects which end of the stroke to manipulate. True will manipulate stroke[0] </param>
-    static void ShortenStroke(ref Vector3[] stroke, float amount, bool first = true)
+    public static void ShortenStroke(ref Vector3[] stroke, float amount, bool first = true)
     {
         if (stroke.Length < 2)
         {
@@ -325,6 +340,18 @@ public class MeshLine : MonoBehaviour
         {
             stroke[stroke.Length - 1] -= dir;
         }
+    }
+
+    /// <summary>
+    ///     Wrapper of Shorten Stroke: Moves the desired point to shorten the stroke.
+    ///     The point internal to that being manipulated will not be affected.
+    /// </summary>
+    /// <param name="stroke"> The local space coordinates of a stroke </param>
+    /// <param name="amount"> The amount to shorten the stroke by in local space </param>
+    /// <param name="first"> Selects which end of the stroke to manipulate. True will manipulate stroke[0] </param>
+    public static void LengthenStroke(ref Vector3[] stroke, float amount, bool first = true)
+    {
+        ShortenStroke(ref stroke, -amount, first);
     }
     #endregion
 }

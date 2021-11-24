@@ -20,10 +20,12 @@ namespace Puzzle
         #region Private Variables
         List<GameObject> _lineSegments;
         Vector2 _spacing;
+        Dictionary<Vector2Int, List<Vector2Int>> adjacency = null;
         #endregion
 
         #region Editor Variables
     #if UNITY_EDITOR
+        [Header("Debugger")]
         [SerializeField] Color _boundingBoxColor = Color.red;
     #endif
         #endregion
@@ -41,6 +43,9 @@ namespace Puzzle
             ClearLines();
             UpdatePuzzleToLocalLogic();
 
+            Transform GOorganizer = new GameObject("Puzzle Visuals").transform;
+            GOorganizer.parent = transform;
+
             Dictionary<Vector2Int, Vector2Int[]> corners = _puzzle.GetCorners();
 
             // draw end points
@@ -50,7 +55,7 @@ namespace Puzzle
                 Vector3 localNode = PuzzleToLocal(pair.Key + (dir * configs.lineWidth / 4));
                 Vector3 localEnd = PuzzleToLocal(pair.Key + (dir * configs.lineWidth / 4) + (dir * configs.endLength));
 
-                GameObject[] lineSegments = MeshLine.DrawLineRounded(configs, transform, localNode, localEnd, false, true);
+                GameObject[] lineSegments = MeshLine.DrawLineRounded(configs, GOorganizer, localNode, localEnd, false, true);
                 foreach (GameObject segment in lineSegments)
                 {
                     if (segment != null)
@@ -63,11 +68,16 @@ namespace Puzzle
             // draw starting points
             foreach (Vector2Int startPoint in _puzzle.StartNodes)
             {
-                _lineSegments.Add(MeshLine.DrawStartPoint(configs, transform, PuzzleToLocal(startPoint)));
+                GameObject go = MeshLine.DrawStartPoint(configs, GOorganizer, PuzzleToLocal(startPoint));
+                _lineSegments.Add(go);
+
+                PuzzleCoordinate coordCompon = go.GetComponent<PuzzleCoordinate>();
+                coordCompon.coord = startPoint;
+                coordCompon.puzzle = this;
             }
 
             // draw nodes
-            foreach (KeyValuePair<Vector2Int, List<Path>> node in _puzzle.GetAdjacencyList())
+            foreach (KeyValuePair<Vector2Int, List<Path>> node in _puzzle.GetAdjacencyListPaths())
             {
                 GameObject segment;
                 Vector2Int pos = node.Key;
@@ -83,12 +93,12 @@ namespace Puzzle
                         corners[pos][1]
                     };
 
-                    segment = MeshLine.DrawRoundedCorner(configs, transform, localPos, GetCornerAngle(stroke));
+                    segment = MeshLine.DrawRoundedCorner(configs, GOorganizer, localPos, GetCornerAngle(stroke));
                 }
                 // draw default (sharp) corner
                 else
                 {
-                    segment = MeshLine.DrawSharpCorner(configs, transform, localPos);
+                    segment = MeshLine.DrawSharpCorner(configs, GOorganizer, localPos);
                 }
 
                 _lineSegments.Add(segment);
@@ -103,11 +113,11 @@ namespace Puzzle
                 switch (entry.Value)
                 {
                     case PathType.Connected:
-                        _lineSegments.Add(MeshLine.DrawConnectedPath(configs, transform, localStart, localEnd));
+                        _lineSegments.Add(MeshLine.DrawConnectedPath(configs, GOorganizer, localStart, localEnd));
                         break;
 
                     case PathType.Split:
-                        GameObject[] lineSegments = MeshLine.DrawSplitPath(configs, transform, localStart, localEnd);
+                        GameObject[] lineSegments = MeshLine.DrawSplitPath(configs, GOorganizer, localStart, localEnd);
                         _lineSegments.Add(lineSegments[0]);
                         _lineSegments.Add(lineSegments[1]);
                         break;
@@ -119,12 +129,12 @@ namespace Puzzle
 
         #region Vector Utilities
         /// <summary>
-        /// Converts from puzzle space to local space. The coordinate will be expand/shrink
-        /// from 0 according to the puzzle size, margin, and nodes in the puzzle.
+        ///     Converts from puzzle space to local space. The coordinate will be expand/shrink
+        ///     from 0 according to the puzzle size, margin, and nodes in the puzzle.
         /// </summary>
         /// <param name="pos"></param>
         /// <returns></returns>
-        Vector3 PuzzleToLocal(Vector2 pos)
+        public Vector3 PuzzleToLocal(Vector2 pos)
         {
             Vector3 pPos = Vector3.zero;
             pPos.x += _spacing.x * pos.x - (configs.size / 2).x + configs.margin;
@@ -134,9 +144,20 @@ namespace Puzzle
         }
 
         /// <summary>
+        ///     Converts from local space to puzzle space.
+        /// </summary>
+        /// <param name="value"></param>
+        /// <param name="x"> If true, the x dimensions of the puzzle will be considered. If false, the y dimensions. </param>
+        /// <returns></returns>
+        public float LocalToPuzzle(float value)
+        {
+            return value / _spacing.x;
+        }
+
+        /// <summary>
         /// Updates the spacing variable according to the size and margins of the puzzle.
         /// </summary>
-        void UpdatePuzzleToLocalLogic()
+        public void UpdatePuzzleToLocalLogic()
         {
             _spacing = configs.size;
             _spacing.x -= configs.margin * 2;
@@ -249,8 +270,19 @@ namespace Puzzle
             _lineSegments = new List<GameObject>();
         }
 
+        #region Accessor
+        public Dictionary<Vector2Int, List<Vector2Int>> GetAdjacency()
+        {
+            if (adjacency == null)
+            {
+                adjacency = _puzzle.GetAdjacencyList();
+            }
+            return adjacency;
+        }
+        #endregion
+
         #region Editor
-    #if UNITY_EDITOR
+#if UNITY_EDITOR
         /// <summary>
         /// Displays the 2D bounding box of the puzzle.
         /// </summary>

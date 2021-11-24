@@ -78,7 +78,7 @@ namespace Puzzle
         {
             // search nodes for corners
             Dictionary<Vector2Int, Vector2Int[]> corners = new Dictionary<Vector2Int, Vector2Int[]>();
-            foreach (KeyValuePair<Vector2Int, List<Path>> node in GetAdjacencyList())
+            foreach (KeyValuePair<Vector2Int, List<Path>> node in GetAdjacencyListPaths())
             {
                 // includes paths that will be made for end nodes
                 if (EndNodes.Contains(node.Key))
@@ -110,10 +110,10 @@ namespace Puzzle
         }
 
         /// <summary>
-        /// Creates and returns the adjacency matrix of the puzzle.
+        /// Creates and returns the adjacency list of the puzzle.
         /// </summary>
         /// <returns></returns>
-        public Dictionary<Vector2Int, List<Path>> GetAdjacencyList()
+        public Dictionary<Vector2Int, List<Path>> GetAdjacencyListPaths()
         {
             Dictionary<Vector2Int, List<Path>> nodes = new Dictionary<Vector2Int, List<Path>>();
             foreach (KeyValuePair<Path, PathType> pair in this)
@@ -134,6 +134,32 @@ namespace Puzzle
 
                 nodes[p1].Add(pair.Key);
                 nodes[p2].Add(pair.Key);
+            }
+
+            return nodes;
+        }
+
+        public Dictionary<Vector2Int, List<Vector2Int>> GetAdjacencyList()
+        {
+            Dictionary<Vector2Int, List<Vector2Int>> nodes = new Dictionary<Vector2Int, List<Vector2Int>>();
+            foreach (KeyValuePair<Path, PathType> pair in this)
+            {
+                if (pair.Value == PathType.NULL) continue;
+                Vector2Int p1 = pair.Key.p1;
+                Vector2Int p2 = pair.Key.p2;
+
+                if (!nodes.ContainsKey(p1))
+                {
+                    nodes.Add(p1, new List<Vector2Int>());
+                }
+
+                if (!nodes.ContainsKey(p2))
+                {
+                    nodes.Add(p2, new List<Vector2Int>());
+                }
+
+                nodes[p1].Add(p2);
+                nodes[p2].Add(p1);
             }
 
             return nodes;
