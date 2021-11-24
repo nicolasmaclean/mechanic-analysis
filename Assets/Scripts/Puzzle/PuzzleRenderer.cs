@@ -270,7 +270,11 @@ namespace Puzzle
             _lineSegments = new List<GameObject>();
         }
 
-        #region Accessor
+        #region Accessors
+        /// <summary>
+        ///     Get the adjacencyList. Utilizes a cache to speed up multiple calls.
+        /// </summary>
+        /// <returns></returns>
         public Dictionary<Vector2Int, List<Vector2Int>> GetAdjacency()
         {
             if (adjacency == null)
@@ -278,6 +282,46 @@ namespace Puzzle
                 adjacency = _puzzle.GetAdjacencyList();
             }
             return adjacency;
+        }
+
+        /// <summary>
+        ///     Gets the path type for the given path.
+        /// </summary>
+        /// <param name="start"></param>
+        /// <param name="end"></param>
+        /// <returns></returns>
+        public PathType GetPathType(Vector2 start, Vector2 end)
+        {
+            Path p1 = new Path(Vector2ToVector2Int(start), Vector2ToVector2Int(end));
+            Path p2 = new Path(Vector2ToVector2Int(end), Vector2ToVector2Int(start));
+
+            if (_puzzle.Paths.Contains(p1))
+            {
+                return _puzzle.Paths[p1];
+            }
+            else if (_puzzle.Paths.Contains(p2))
+            {
+                return _puzzle.Paths[p2];
+            }
+            else
+            {
+                return PathType.NULL;
+            }
+
+            Vector2Int Vector2ToVector2Int(Vector2 vec)
+            {
+                return new Vector2Int((int) vec.x, (int) vec.y);
+            }
+        }
+
+        /// <summary>
+        ///     Returns true if the puzzle coordinate corresponds to a start node.
+        /// </summary>
+        /// <param name="point"></param>
+        /// <returns></returns>
+        public bool IsStartPoint(Vector2 point)
+        {
+            return _puzzle.StartNodes.Contains(new Vector2Int((int) point.x, (int) point.y));
         }
         #endregion
 

@@ -30,10 +30,12 @@ namespace Puzzle
 
         bool _atIntersection;
         List<Vector2Int> _neighbors = null;
+
         Vector2 _screenOrigin;
         Vector2 _spacing;
         float _intersectionWidth;
         float _puzzleLineWidth;
+        float _startNodeRadius;
 
         Vector2 _position;
         Vector2Int _intersection;
@@ -72,7 +74,7 @@ namespace Puzzle
             {
                 //_position += ScreenToPuzzleSpacing(mouseDelta);
                 _position = ScreenToPuzzle(_virtualMouse.Position);
-                _position = ClampToAvailableDirections(_position, _intersection);
+                _position = ClampToIntersection(_position, _intersection);
                 _virtualMouse.Position = PuzzleToScreen(_position);
 
                 bool leavingIntersection = !WithinSquareRadius(_intersection, _intersectionWidth, _position);
@@ -84,10 +86,13 @@ namespace Puzzle
             }
             else
             {
-                // clamp virtual mouse to target direction
-                Vector2 delta = ClampToTargetDirection(mouseDelta);
-                _virtualMouse.Position -= mouseDelta - delta;
+                // clamp virtual mouse to current path
                 _position = ScreenToPuzzle(_virtualMouse.Position);
+                _position = ClampToPath(_position, _intersection, _targetPosition);
+                _virtualMouse.Position = PuzzleToScreen(_position);
+
+                // prevent moving into a gap or self-intersection
+                // update _virtualMouse
 
                 // checks if entering intersection
                 bool enteringNextIntersection = WithinSquareRadius(_targetPosition, _intersectionWidth, _position);
@@ -102,7 +107,6 @@ namespace Puzzle
                 }
             }
 
-            // update _playerPath Visual using can use virtualMouse.Position or _position
             _playerPath.UpdatePath(_position);
         }
 
@@ -174,6 +178,9 @@ namespace Puzzle
                     _puzzle = coordinate.puzzle;
                     _playerPath = _puzzle.GetComponentInChildren<PlayerPath>();
 
+                    Bounds startBounds = coordinate.GetComponentInChildren<Renderer>().bounds;
+                    _startNodeRadius = _puzzle.LocalToPuzzle(startBounds.extents.x);
+
                     StartDrawing(coordinate.coord);
                 }
             }
@@ -193,7 +200,7 @@ namespace Puzzle
 
             _playerPath.StartPath(_intersection);
             _virtualMouse.Activate(PuzzleToScreen(coord));
-            _virtualMouse._cursor.localScale = Vector3.one * _puzzleLineWidth * 2;
+            _virtualMouse._cursor.localScale = Vector3.one * _puzzle.configs.lineWidth;
         }
 
         /// <summary>
@@ -299,16 +306,34 @@ namespace Puzzle
             return Mathf.Abs(point.x - center.x) < radius && Mathf.Abs(point.y - center.y) < radius;
         }
 
-        /// <summary>
-        ///     Clamps the delta vector to target direction. Projects delta onto target direction.
-        ///     If _direction == Vector2.zero, output will also be Vector2.zero
-        /// </summary>
-        /// <param name="delta"> </param>
-        /// <returns> </returns>
-        Vector2 ClampToTargetDirection(Vector2 delta)
+        Vector2 ClampToPath(Vector2 position, Vector2 start, Vector2 end)
         {
-            Vector3 projection = Vector3.Project(delta, ((Vector2) _targetPosition - _intersection).normalized);
+            // clamp between start and end
+            Vector3 projection = Vector3.Project(position - start, end - start);
             Vector2 clamped = new Vector2(projection.x, projection.y);
+
+            // case: split path requires earlier clamping
+            if (_puzzle.GetPathType(start, end) == PathType.Split)
+            {
+                clamped = Vector2.ClampMagnitude(clamped, .5f - _puzzle.configs.splitGap / 2 - _puzzleLineWidth / 2);
+            }
+            // case: prevent self-intersecting position
+            else if (_playerPath.Verts.Contains(end) && _playerPath.Verts[_playerPath.Verts.Count - 1] != end)
+            {
+                // case: stop before startnode
+                float maxLen;
+                if (_puzzle.IsStartPoint(end))
+                {
+                    maxLen = 1 - _startNodeRadius - _puzzleLineWidth / 2;
+                }
+                else
+                {
+                    maxLen = 1 - _puzzleLineWidth;
+                }
+                clamped = Vector2.ClampMagnitude(clamped, maxLen);
+            }
+
+            clamped += start;
             return clamped;
         }
 
@@ -318,7 +343,7 @@ namespace Puzzle
         /// <param name="position"></param>
         /// <param name="intersection"></param>
         /// <returns></returns>
-        Vector2 ClampToAvailableDirections(Vector2 position, Vector2 intersection)
+        Vector2 ClampToIntersection(Vector2 position, Vector2 intersection)
         {
             Vector2 extentsX = Vector2.one * intersection.x;
             Vector2 extentsY = Vector2.one * intersection.y;

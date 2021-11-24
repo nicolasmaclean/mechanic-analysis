@@ -6,7 +6,7 @@ using Puzzle;
 public class PlayerPath : MonoBehaviour
 {
     #region Public Variables
-    [HideInInspector]
+    //[HideInInspector]
     public List<Vector2> Verts = new List<Vector2>();
     #endregion
 
