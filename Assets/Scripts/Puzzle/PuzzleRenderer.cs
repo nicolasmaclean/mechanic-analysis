@@ -14,7 +14,8 @@ namespace Puzzle
 
         #region Exposed Variables
         [Header("Data")]
-        [SerializeField] SOPuzzle _puzzle;
+        [SerializeField] 
+        SOPuzzle _puzzle;
         #endregion
 
         #region Private Variables
@@ -30,7 +31,7 @@ namespace Puzzle
     #endif
         #endregion
 
-        void Start()
+        void Awake()
         {
             CreatePuzzle();
         }

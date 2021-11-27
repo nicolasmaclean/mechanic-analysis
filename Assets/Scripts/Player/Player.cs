@@ -25,7 +25,7 @@ namespace Puzzle
         #endregion
 
         #region Private Variables
-        PuzzleRenderer _puzzle = null;
+        public PuzzleRenderer _puzzle = null;
         PlayerPath _playerPath = null;
         Camera _cam = null;
         VirtualMouse _virtualMouse = null;
@@ -56,8 +56,13 @@ namespace Puzzle
             _virtualMouse = GetComponent<VirtualMouse>();
             SubscribeToEvents();
 
+            State = PlayerState.FPS;
+        }
+
+        void Start()
+        {
             // default to looking for testing
-            State = PlayerState.LookingAtPuzzle;
+            InteractWithPuzzle();
         }
 
         void OnDestroy()
@@ -200,7 +205,6 @@ namespace Puzzle
         {
             if (State == PlayerState.Drawing)
             {
-                _virtualMouse.Deactivate();
                 _playerPath?.StopPath();
 
                 _puzzle = null;
@@ -218,7 +222,7 @@ namespace Puzzle
         {
             if (State != PlayerState.LookingAtPuzzle) return;
 
-            Ray ray = _cam.ScreenPointToRay(Input.mousePosition);
+            Ray ray = _cam.ScreenPointToRay(_virtualMouse.Position);
             if (Physics.Raycast(ray, out _hitinfo, 20f))
             {
                 PuzzleCoordinate coordinate = _hitinfo.transform.GetComponent<PuzzleCoordinate>();
@@ -245,11 +249,7 @@ namespace Puzzle
         {
             State = PlayerState.Drawing;
             EnterIntersection(coord);
-            UpdateCoordinateConversionLogic();
-
             _playerPath.StartPath(_intersection);
-            _virtualMouse.Activate(PuzzleToScreen(coord));
-            _virtualMouse._cursor.localScale = Vector3.one * _puzzle.configs.lineWidth;
         }
 
         /// <summary>
@@ -257,13 +257,27 @@ namespace Puzzle
         ///     Moves camera and locks player movement.
         ///     Updates to LookingAtPuzzle state.
         /// </summary>
-        void InteractWithPuzzle(SOPuzzle puzzle)
+        void InteractWithPuzzle()
         {
             if (State != PlayerState.FPS) return;
 
             State = PlayerState.LookingAtPuzzle;
+            UpdateCoordinateConversionLogic();
+
+            _virtualMouse.Activate(new Vector2(Screen.width / 2, Screen.height / 2), _spacing * _puzzleLineWidth);
             // move camera to view puzzle
             // lock player movement
+        }
+
+        /// <summary>
+        ///     Switches from LookingAtPuzzle to FPS. Will hide the virtual cursor.
+        /// </summary>
+        void LookAwayFromPuzzle()
+        {
+            if (State != PlayerState.LookingAtPuzzle) return;
+
+            State = PlayerState.FPS;
+            _virtualMouse.Deactivate();
         }
         #endregion
 
