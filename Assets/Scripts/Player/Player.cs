@@ -247,9 +247,10 @@ namespace Puzzle
         /// <param name="coord"> The puzzle space coordinate for PlayerPath to start </param>
         void StartDrawing(Vector2Int coord)
         {
+            if (!_playerPath.StartPath(coord)) return;
+
             State = PlayerState.Drawing;
             EnterIntersection(coord);
-            _playerPath.StartPath(_intersection);
         }
 
         /// <summary>
@@ -265,7 +266,6 @@ namespace Puzzle
             UpdateCoordinateConversionLogic();
 
             _virtualMouse.Activate(new Vector2(Screen.width / 2, Screen.height / 2), _spacing * _puzzleLineWidth);
-            Debug.Log(_spacing * _puzzleLineWidth);
             // move camera to view puzzle
             // lock player movement
         }
@@ -354,8 +354,6 @@ namespace Puzzle
 
             _intersectionWidth = _puzzleLineWidth = _puzzle.LocalToPuzzle(_puzzle.configs.lineWidth);
             _intersectionWidth *= _intersectionSize / 2;
-
-            Debug.Log(_puzzleLineWidth);
         }
         #endregion
 

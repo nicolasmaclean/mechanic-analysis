@@ -12,7 +12,7 @@ public class PlayerPath : MonoBehaviour
 
     #region Exposed Variables
     [Header("Visual Configurations")]
-    [Tooltip("Material to be applied to created visuals. If null it will use default prefab material.")]
+    [Tooltip("Material to be applied to created visuals.")]
     [SerializeField]
     Material _lineMaterial;
 
@@ -23,12 +23,19 @@ public class PlayerPath : MonoBehaviour
     [Tooltip("The animation duration of path clearing")]
     [SerializeField, Min(0)]
     float _stopAnimationTime = .2f;
+
+    [Tooltip("The final color of the path before destroying itself. Should be the same as the puzzle path.")]
+    [SerializeField]
+    Color _finalColor;
     #endregion
 
     #region Private Variables
     PuzzleRenderer _puzzle;
     List<GameObject> _visuals = new List<GameObject>();
     bool _clearing = false;
+
+    Material _instancedMaterial;
+    Color _initialColor;
     #endregion
 
     void Awake()
@@ -38,6 +45,10 @@ public class PlayerPath : MonoBehaviour
         {
             Debug.LogError("ERROR: unable to find parent PuzzleRenderer.");
         }
+
+        _instancedMaterial = new Material(_lineMaterial.shader);
+        _instancedMaterial.CopyPropertiesFromMaterial(_lineMaterial);
+        _initialColor = _instancedMaterial.color;
     }
 
     #region Drawing
@@ -47,21 +58,19 @@ public class PlayerPath : MonoBehaviour
     /// </summary>
     /// <param name="puzzle"></param>
     /// <param name="pos"></param>
-    public void StartPath(Vector2 position)
+    public bool StartPath(Vector2 position)
     {
-        if (_clearing) return;
+        if (_clearing) return false;
 
         ClearPath();
-
-        Color opaque = _lineMaterial.color;
-        opaque.a = 1;
-        _lineMaterial.color = opaque;
+        _instancedMaterial.color = _initialColor;
 
         Vector3 localPosition = _puzzle.PuzzleToLocal(position);
         GameObject go = MeshLine.DrawStartPoint(_puzzle.configs, transform, localPosition);
         AddVisual(go);
 
         StartCoroutine(ScaleFromZeroTo(go.transform, Vector3.one * _puzzle.configs.lineWidth * _puzzle.configs.startNodeSize, _startAnimationTime));
+        return true;
     }
 
     /// <summary>
@@ -71,7 +80,7 @@ public class PlayerPath : MonoBehaviour
     {
         _clearing = true;
 
-        StartCoroutine(FadeAway(_lineMaterial, _stopAnimationTime));
+        StartCoroutine(FadeAway(_instancedMaterial, _finalColor, _stopAnimationTime));
         StartCoroutine(WaitBeforeCallback(_stopAnimationTime, ClearPath));
 
         StartCoroutine(WaitBeforeCallback(_stopAnimationTime, () =>
@@ -120,7 +129,7 @@ public class PlayerPath : MonoBehaviour
     /// <param name="position"></param>
     public void UpdatePath(Vector2 position)
     {
-        if (_visuals.Count < 2) return;
+        if (_visuals.Count < 2 || _clearing) return;
 
         Transform lineT = _visuals[_visuals.Count - 2].transform;
         Transform capT = _visuals[_visuals.Count - 1].transform;
@@ -134,6 +143,7 @@ public class PlayerPath : MonoBehaviour
         lineT.localScale = nScal;
         capT.localPosition = localEnd;
     }
+
     /// <summary>
     ///     Pops the last marker
     /// </summary>
@@ -208,10 +218,7 @@ public class PlayerPath : MonoBehaviour
             collider.enabled = false;
         }
 
-        if (_lineMaterial != null)
-        {
-            go.transform.GetComponentInChildren<Renderer>().material = _lineMaterial;
-        }
+        go.transform.GetComponentInChildren<Renderer>().material = _instancedMaterial;
     }
     #endregion
 
@@ -229,21 +236,19 @@ public class PlayerPath : MonoBehaviour
         t.localScale = finalScale;
     }
 
-    IEnumerator FadeAway(Material mat, float duration)
+    IEnumerator FadeAway(Material mat, Color fColor, float duration)
     {
         float timestamp = Time.time;
-        Color nColor = mat.color;
+        Color nColor = _initialColor;
 
         while (Time.time - timestamp < duration)
         {
-            //nColor.a = Mathf.Lerp(1, 0, (Time.time - timestamp) / duration);
-            nColor.a = Mathf.Cos(Mathf.PI * (Time.time - timestamp) / (duration * 2));
-            mat.color = nColor;
+            float t = (Time.time - timestamp) / duration;
+            mat.color = Color.Lerp(nColor, fColor, t);
             yield return null;
         }
 
-        nColor.a = 0;
-        mat.color = nColor;
+        mat.color = fColor;
     }
 
     IEnumerator WaitBeforeCallback(float waitTime, System.Action callback)

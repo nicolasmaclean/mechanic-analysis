@@ -23,7 +23,7 @@ public class VirtualMouse : MonoBehaviour
 
     [Tooltip("The duration of the animation on deactivation")]
     [SerializeField]
-    float _deactivationDuration = 1f;
+    float _deactivationDuration = .25f;
 
     [Tooltip("The inital size of _cursorCenter relative to _cursor when activated.f")]
     [SerializeField]
