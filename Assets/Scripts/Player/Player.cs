@@ -265,6 +265,7 @@ namespace Puzzle
             UpdateCoordinateConversionLogic();
 
             _virtualMouse.Activate(new Vector2(Screen.width / 2, Screen.height / 2), _spacing * _puzzleLineWidth);
+            Debug.Log(_spacing * _puzzleLineWidth);
             // move camera to view puzzle
             // lock player movement
         }
@@ -347,12 +348,14 @@ namespace Puzzle
         {
             _puzzle.UpdatePuzzleToLocalLogic();
 
-            _screenOrigin = _cam.WorldToScreenPoint(_puzzle.PuzzleToLocal(Vector2.zero));
-            _spacing.x = (_cam.WorldToScreenPoint(_puzzle.PuzzleToLocal(Vector2.right)) - (Vector3) _screenOrigin).x;
-            _spacing.y = (_cam.WorldToScreenPoint(_puzzle.PuzzleToLocal(Vector2.up)) - _cam.WorldToScreenPoint(_puzzle.PuzzleToLocal(Vector2.zero))).y;
+            _screenOrigin = _cam.WorldToScreenPoint(_puzzle.transform.TransformPoint(_puzzle.PuzzleToLocal(Vector2.zero)));
+            _spacing.x = (_cam.WorldToScreenPoint(_puzzle.transform.TransformPoint(_puzzle.PuzzleToLocal(Vector2.right))) - (Vector3) _screenOrigin).x;
+            _spacing.y = (_cam.WorldToScreenPoint(_puzzle.transform.TransformPoint(_puzzle.PuzzleToLocal(Vector2.up))) - (Vector3) _screenOrigin).y;
 
             _intersectionWidth = _puzzleLineWidth = _puzzle.LocalToPuzzle(_puzzle.configs.lineWidth);
             _intersectionWidth *= _intersectionSize / 2;
+
+            Debug.Log(_puzzleLineWidth);
         }
         #endregion
 

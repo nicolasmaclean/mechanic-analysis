@@ -126,7 +126,7 @@ public class PlayerPath : MonoBehaviour
         Transform capT = _visuals[_visuals.Count - 1].transform;
 
         Vector3 localPosition = _puzzle.PuzzleToLocal(position);
-        Vector3 localStart = lineT.position;
+        Vector3 localStart = _puzzle.transform.InverseTransformPoint(lineT.position);
         Vector3 localEnd = Vector3.Project(localPosition - localStart, lineT.up) + localStart;
 
         Vector3 nScal = lineT.localScale;

@@ -46,6 +46,7 @@ namespace Puzzle
 
             Transform GOorganizer = new GameObject("Puzzle Visuals").transform;
             GOorganizer.parent = transform;
+            GOorganizer.transform.localPosition = Vector3.zero;
 
             Dictionary<Vector2Int, Vector2Int[]> corners = _puzzle.GetCorners();
 
