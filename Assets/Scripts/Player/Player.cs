@@ -248,7 +248,7 @@ namespace Puzzle
         /// <param name="coord"> The puzzle space coordinate for PlayerPath to start </param>
         void StartDrawing(Vector2Int coord)
         {
-            if (!_playerPath.StartPath(coord)) return;
+            if (!_playerPath.StartPath(coord, this)) return;
 
             State = PlayerState.Drawing;
             EnterIntersection(coord);

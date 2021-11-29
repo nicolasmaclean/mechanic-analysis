@@ -27,17 +27,27 @@ public class PlayerPath : MonoBehaviour
     [Tooltip("The final color of the path before destroying itself. Should be the same as the puzzle path.")]
     [SerializeField]
     Color _finalColor;
+
+    [Tooltip("The cycle length of the pulsing animation performed when the player has reached the end of the puzzle.")]
+    [SerializeField]
+    float _winCycle = .8f;
     #endregion
 
     #region Private Variables
     PuzzleRenderer _puzzle;
+    Player _player;
     List<GameObject> _visuals = new List<GameObject>();
     bool _clearing = false;
 
     Material _instancedMaterial;
+    int _emissionID;
     Color _initialColor;
+    Color _initialEmission;
+
+    float _elapsedTime = 0;
     #endregion
 
+    #region Monobehaviour
     void Awake()
     {
         _puzzle = transform.parent.GetComponent<PuzzleRenderer>();
@@ -48,8 +58,26 @@ public class PlayerPath : MonoBehaviour
 
         _instancedMaterial = new Material(_lineMaterial.shader);
         _instancedMaterial.CopyPropertiesFromMaterial(_lineMaterial);
+        _emissionID = Shader.PropertyToID("_EmissionColor");
+
         _initialColor = _instancedMaterial.color;
+        _initialEmission = _instancedMaterial.GetColor(_emissionID);
     }
+
+    void Update()
+    {
+        if (_player != null && _player.AtEnd && !_clearing)
+        {
+            PulsateEmission();
+            _elapsedTime += Time.deltaTime;
+        }
+        else
+        {
+            _instancedMaterial.SetColor(_emissionID, _initialEmission);
+            _elapsedTime = 0;
+        }
+    }
+    #endregion
 
     #region Drawing
     /// <summary>
@@ -58,12 +86,15 @@ public class PlayerPath : MonoBehaviour
     /// </summary>
     /// <param name="puzzle"></param>
     /// <param name="pos"></param>
-    public bool StartPath(Vector2 position)
+    public bool StartPath(Vector2 position, Player player)
     {
         if (_clearing) return false;
 
         ClearPath();
+        _player = player;
+
         _instancedMaterial.color = _initialColor;
+        _instancedMaterial.SetColor(_emissionID, _initialEmission);
 
         Vector3 localPosition = _puzzle.PuzzleToLocal(position);
         GameObject go = MeshLine.DrawStartPoint(_puzzle.configs, transform, localPosition);
@@ -222,7 +253,7 @@ public class PlayerPath : MonoBehaviour
     }
     #endregion
 
-    #region Coroutines
+    #region Coroutines and VFX
     IEnumerator ScaleFromZeroTo(Transform t, Vector3 finalScale, float duration)
     {
         float timestamp = Time.time;
@@ -239,16 +270,28 @@ public class PlayerPath : MonoBehaviour
     IEnumerator FadeAway(Material mat, Color fColor, float duration)
     {
         float timestamp = Time.time;
-        Color nColor = _initialColor;
+        float transition = .7f;
+        Color eColor = mat.GetColor(_emissionID);
 
         while (Time.time - timestamp < duration)
         {
-            float t = (Time.time - timestamp) / duration;
-            mat.color = Color.Lerp(nColor, fColor, t);
+            float elapsedTime = Time.time - timestamp;
+
+            mat.color = Color.Lerp(_initialColor, fColor, (elapsedTime - transition) / (duration - transition));
+            mat.SetColor(_emissionID, Color.Lerp(eColor, Color.black, elapsedTime / transition));
+
             yield return null;
         }
 
         mat.color = fColor;
+        mat.SetColor(_emissionID, Color.black);
+    }
+
+    void PulsateEmission()
+    {
+        float t = .5f * Mathf.Sin(2 * Mathf.PI * _elapsedTime / _winCycle) + .5f;
+        Color nColor = Color.Lerp(Color.white, _initialEmission, t);
+        _instancedMaterial.SetColor(_emissionID, nColor);
     }
 
     IEnumerator WaitBeforeCallback(float waitTime, System.Action callback)

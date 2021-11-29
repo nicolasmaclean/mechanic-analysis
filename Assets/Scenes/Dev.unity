@@ -202,6 +202,7 @@ MonoBehaviour:
   _startAnimationTime: 0.15
   _stopAnimationTime: 1.5
   _finalColor: {r: 0.23529412, g: 0.13333334, b: 0.043137256, a: 1}
+  _winCycle: 0.8
 --- !u!1 &204900032
 GameObject:
   m_ObjectHideFlags: 0
@@ -1488,6 +1489,7 @@ MonoBehaviour:
   _startAnimationTime: 0.15
   _stopAnimationTime: 1.5
   _finalColor: {r: 0.23529412, g: 0.13333334, b: 0.043137256, a: 1}
+  _winCycle: 0.8
 --- !u!1 &1874598638
 GameObject:
   m_ObjectHideFlags: 0
