@@ -10,7 +10,10 @@ namespace Puzzle
     {
         #region Public Variables
         [HideInInspector]
-        public PlayerState State = PlayerState.FPS;
+        public PlayerState State { get; private set; } = PlayerState.FPS;
+
+        [HideInInspector]
+        public bool AtEnd { get; private set; } = false;
         #endregion
 
         #region Exposed Variables
@@ -45,8 +48,6 @@ namespace Puzzle
         Vector2Int _intersection;
         Vector2Int _targetPosition;
         bool _targetIsEnd;
-
-        bool _atEnd = false;
         #endregion
 
         #region Monobehaviours
@@ -414,7 +415,7 @@ namespace Puzzle
 
                 if (len > maxLen - _endSize)
                 {
-                    _atEnd = true;
+                    AtEnd = true;
                     resetEnd = false;
                 }
 
@@ -423,7 +424,7 @@ namespace Puzzle
 
             if (resetEnd)
             {
-                _atEnd = false;
+                AtEnd = false;
             }
 
             clamped += start;
