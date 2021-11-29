@@ -42,7 +42,7 @@ public class VFXGoalMarker : MonoBehaviour
 
     void Update()
     {
-        if ( (_isStartMarker && _player.State == Puzzle.PlayerState.LookingAtPuzzle) || (_isEndMarker && !_player.AtEnd && _player.State == Puzzle.PlayerState.Drawing) )
+        if ( (_isStartMarker && _player.State == Puzzle.PlayerState.LookingAtPuzzle && !_player.Won) || (_isEndMarker && !_player.AtEnd && _player.State == Puzzle.PlayerState.Drawing) )
         {
             float t = elapsedTime / _cycleDuration;
             t = Mathf.Clamp(2f * t - 1f, 0, 1);

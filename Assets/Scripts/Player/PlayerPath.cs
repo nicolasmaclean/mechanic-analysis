@@ -66,7 +66,7 @@ public class PlayerPath : MonoBehaviour
 
     void Update()
     {
-        if (_player != null && _player.AtEnd && !_clearing)
+        if (_player != null && _player.AtEnd && !_player.Won && !_clearing)
         {
             PulsateEmission();
             _elapsedTime += Time.deltaTime;

@@ -9,11 +9,9 @@ namespace Puzzle
     public class Player : MonoBehaviour
     {
         #region Public Variables
-        [HideInInspector]
         public PlayerState State { get; private set; } = PlayerState.FPS;
-
-        [HideInInspector]
         public bool AtEnd { get; private set; } = false;
+        public bool Won { get; private set; } = false;
         #endregion
 
         #region Exposed Variables
@@ -210,6 +208,7 @@ namespace Puzzle
 
                 _puzzle = null;
                 _playerPath = null;
+                Won = false;
                 State = PlayerState.LookingAtPuzzle;
             }
         }
@@ -251,7 +250,21 @@ namespace Puzzle
             if (!_playerPath.StartPath(coord, this)) return;
 
             State = PlayerState.Drawing;
+            Won = false;
             EnterIntersection(coord);
+        }
+
+        void Win()
+        {
+            if (State != PlayerState.Drawing) return;
+
+            if (AtEnd)
+            {
+                State = PlayerState.LookingAtPuzzle;
+                Won = true;
+                //_virtualMouse.Deactivate();   // would need to consider if this is the first time the puzzle has been solved to auto-deactivate here
+                //_position = _intersection + ((Vector2) _targetPosition - _intersection) * (1 - _puzzle.configs.endLength);
+            }
         }
 
         /// <summary>
@@ -478,6 +491,7 @@ namespace Puzzle
             _virtualMouse.OnMouseMove += UpdateDrawing;
             _virtualMouse.OnLeftClick += AttemptToStartDrawing;
             _virtualMouse.OnRightClick += StopDrawing;
+            _virtualMouse.OnLeftClick += Win;
         }
 
         /// <summary>
@@ -488,6 +502,7 @@ namespace Puzzle
             _virtualMouse.OnMouseMove -= UpdateDrawing;
             _virtualMouse.OnLeftClick -= AttemptToStartDrawing;
             _virtualMouse.OnRightClick -= StopDrawing;
+            _virtualMouse.OnLeftClick -= Win;
         }
         #endregion
     }
