@@ -64,6 +64,14 @@ namespace Puzzle
             InteractWithPuzzle();
         }
 
+        void Update()
+        {
+            if (Input.GetKeyDown(KeyCode.Escape))
+            {
+                Quit();
+            }
+        }
+
         void OnDestroy()
         {
             UnsubscribeToEvents();
@@ -293,6 +301,12 @@ namespace Puzzle
 
             State = PlayerState.FPS;
             _virtualMouse.Deactivate();
+        }
+
+        void Quit()
+        {
+            Debug.Log("Quitting game.");
+            Application.Quit();
         }
         #endregion
 
