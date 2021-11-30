@@ -20,6 +20,10 @@ public class Player : MonoBehaviour
     [Tooltip("The radius of the end point used to calculate when the player has reached the end.")]
     [SerializeField]
     float _endSize = 0.05f;
+
+    [Tooltip("Reference to puzzle frame gameObject.")]
+    [SerializeField]
+    PuzzleFrame _puzzleFrame;
     #endregion
 
     #region Private Variables
@@ -288,6 +292,8 @@ public class Player : MonoBehaviour
         UpdateCoordinateConversionLogic();
 
         _virtualMouse.Activate(new Vector2(Screen.width / 2, Screen.height / 2), _spacing * _puzzleLineWidth);
+        _puzzleFrame.Activate();
+
         // move camera to view puzzle
         // lock player movement
     }

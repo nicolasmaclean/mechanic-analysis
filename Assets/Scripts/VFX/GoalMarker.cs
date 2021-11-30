@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 
 [RequireComponent(typeof(SpriteRenderer))]
-public class VFXGoalMarker : MonoBehaviour
+public class GoalMarker : MonoBehaviour
 {
     #region Exposed Variables
     [Tooltip("The length of a single cycle of the animation")]
