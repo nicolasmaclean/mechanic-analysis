@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class PZ : IEnumerable
+public class Puzzle : IEnumerable
 {
     #region Data
     public Dictionary<Path, PathType> Paths;
@@ -11,7 +11,7 @@ public class PZ : IEnumerable
     public Dictionary<Vector2Int, Direction> EndNodes;
     #endregion
 
-    public PZ(TextAsset puzzleJSON)
+    public Puzzle(TextAsset puzzleJSON)
     {
         LoadFromJSON(puzzleJSON);
     }
@@ -305,6 +305,11 @@ public class PZ : IEnumerable
         return Paths.GetEnumerator();
     }
 
+    /// <summary>
+    ///     Converts string to PathType. Returns Pathtype.NULL if unknown.
+    /// </summary>
+    /// <param name="str"></param>
+    /// <returns></returns>
     public static PathType GetPathTypeFromString(string str)
     {
         switch (str)
@@ -321,6 +326,11 @@ public class PZ : IEnumerable
         }
     }
 
+    /// <summary>
+    ///     Converts string to Direction. Returns Direction.NULL if unknown.
+    /// </summary>
+    /// <param name="str"></param>
+    /// <returns></returns>
     public static Direction GetDirectionFromString(string str)
     {
         switch (str)

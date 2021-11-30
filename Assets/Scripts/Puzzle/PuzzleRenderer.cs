@@ -16,7 +16,7 @@ public class PuzzleRenderer : MonoBehaviour
     #endregion
 
     #region Private Variables
-    PZ _puzzle;
+    Puzzle _puzzle;
     List<GameObject> _lineSegments;
     Vector2 _spacing;
     Dictionary<Vector2Int, List<Vector2Int>> adjacency = null;
@@ -31,7 +31,7 @@ public class PuzzleRenderer : MonoBehaviour
 
     void Awake()
     {
-        _puzzle = new PZ(_puzzleJSON);
+        _puzzle = new Puzzle(_puzzleJSON);
         CreatePuzzle();
     }
 
@@ -52,7 +52,7 @@ public class PuzzleRenderer : MonoBehaviour
         // draw end points
         foreach (KeyValuePair<Vector2Int, Direction> pair in _puzzle.EndNodes)
         {
-            Vector2 dir = PZ.GetDirectionVector(pair.Value);
+            Vector2 dir = Puzzle.GetDirectionVector(pair.Value);
             Vector3 localNode = PuzzleToLocal(pair.Key + (dir * configs.lineWidth / 4));
             Vector3 localEnd = PuzzleToLocal(pair.Key + (dir * configs.lineWidth / 4) + (dir * configs.endLength));
 

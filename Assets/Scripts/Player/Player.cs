@@ -259,6 +259,9 @@ public class Player : MonoBehaviour
         EnterIntersection(coord);
     }
 
+    /// <summary>
+    ///     finishes the current puzzle. Updates to LookingAtPuzzle state.
+    /// </summary>
     void Win()
     {
         if (State != PlayerState.Drawing) return;
@@ -300,6 +303,9 @@ public class Player : MonoBehaviour
         _virtualMouse.Deactivate();
     }
 
+    /// <summary>
+    ///     Closes the Application
+    /// </summary>
     void Quit()
     {
         Debug.Log("Quitting game.");
