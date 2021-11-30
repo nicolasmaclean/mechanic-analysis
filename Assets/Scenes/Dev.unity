@@ -821,7 +821,7 @@ MonoBehaviour:
       type: 3}
     capPrefab: {fileID: 4980807385735374201, guid: 7c94ebaa598274c47b54d9ceba2facfd,
       type: 3}
-  _puzzle: {fileID: 11400000, guid: 81665b7acc9bf4b4484a81f94ecf641b, type: 2}
+  _puzzleJSON: {fileID: 0}
   _boundingBoxColor: {r: 1, g: 0, b: 0, a: 1}
 --- !u!4 &943947624
 Transform:
@@ -1195,7 +1195,7 @@ MonoBehaviour:
       type: 3}
     capPrefab: {fileID: 4980807385735374201, guid: 7c94ebaa598274c47b54d9ceba2facfd,
       type: 3}
-  _puzzle: {fileID: 11400000, guid: 230c14139eba3064d95dbfc28ed24982, type: 2}
+  _puzzleJSON: {fileID: 4900000, guid: 090f7476245570440ba847a6ac4a6645, type: 3}
   _boundingBoxColor: {r: 1, g: 0, b: 0, a: 1}
 --- !u!4 &1308241506
 Transform:
@@ -1362,7 +1362,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 8b9a305e18de0c04dbd257a21cd47087, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  sharedProfile: {fileID: 11400000, guid: ea795c2676dae5242b310d65b0a14323, type: 2}
+  sharedProfile: {fileID: 0}
   isGlobal: 1
   blendDistance: 0
   weight: 1

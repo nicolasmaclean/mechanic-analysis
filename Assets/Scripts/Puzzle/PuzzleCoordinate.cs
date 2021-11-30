@@ -5,5 +5,5 @@ using UnityEngine;
 public class PuzzleCoordinate : MonoBehaviour
 {
     public Vector2Int coord;
-    public Puzzle.PuzzleRenderer puzzle;
+    public PuzzleRenderer puzzle;
 }

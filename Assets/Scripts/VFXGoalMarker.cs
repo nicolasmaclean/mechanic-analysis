@@ -15,7 +15,7 @@ public class VFXGoalMarker : MonoBehaviour
     float _finalScale = 0.3f;
 
     [SerializeField]
-    Puzzle.Player _player;
+    Player _player;
 
     [Tooltip("")]
     [SerializeField]
@@ -42,7 +42,7 @@ public class VFXGoalMarker : MonoBehaviour
 
     void Update()
     {
-        if ( (_isStartMarker && _player.State == Puzzle.PlayerState.LookingAtPuzzle && !_player.Won) || (_isEndMarker && !_player.AtEnd && _player.State == Puzzle.PlayerState.Drawing) )
+        if ( (_isStartMarker && _player.State == PlayerState.LookingAtPuzzle && !_player.Won) || (_isEndMarker && !_player.AtEnd && _player.State == PlayerState.Drawing) )
         {
             float t = elapsedTime / _cycleDuration;
             t = Mathf.Clamp(2f * t - 1f, 0, 1);
