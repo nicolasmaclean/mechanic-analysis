@@ -270,7 +270,7 @@ public class Player : MonoBehaviour
     {
         if (!_playerPath.StartPath(coord, this)) return;
 
-        AudioManager.instance.PlayClip(_startDrawingClip, 1);
+        AudioManager.instance.PlayClip(_startDrawingClip, .6f);
         State = PlayerState.Drawing;
         Won = false;
         EnterIntersection(coord);
@@ -287,9 +287,9 @@ public class Player : MonoBehaviour
         {
             State = PlayerState.LookingAtPuzzle;
             Won = true;
-            AudioManager.instance.PlayClip(_winClip, 1);
+            AudioManager.instance.PlayClip(_winClip, .6f);
             _playerPath.Complete();
-            //_virtualMouse.Deactivate();   // would need to consider if this is the first time the puzzle has been solved to auto-deactivate here
+            _virtualMouse.Deactivate();   // would need to consider if this is the first time the puzzle has been solved to auto-deactivate here
             //_position = _intersection + ((Vector2) _targetPosition - _intersection) * (1 - _puzzle.configs.endLength);
         }
     }
@@ -551,7 +551,8 @@ public class Player : MonoBehaviour
     #region IEnumerators
     IEnumerator WooshInFadeOut(AudioSource source)
     {
-        float len = 2f;
+        float peakVol = .1f;
+        float len = 1.75f;
         float peakFrac = .9f;
         float elapsedtime = 0;
 
@@ -562,11 +563,11 @@ public class Player : MonoBehaviour
             float nVol;
             if (elapsedtime < peakFrac * len)
             {
-                nVol = Mathf.Lerp(0, 1, elapsedtime / (peakFrac * len));
+                nVol = Mathf.Lerp(0, peakVol, elapsedtime / (peakFrac * len));
             }
             else
             {
-                nVol = Mathf.Lerp(1, 0, (elapsedtime - peakFrac * len) / (len - peakFrac * len));
+                nVol = Mathf.Lerp(peakVol, 0, (elapsedtime - peakFrac * len) / (len - peakFrac * len));
             }
 
             source.volume = nVol;
