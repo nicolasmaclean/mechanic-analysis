@@ -35,8 +35,9 @@ public class PuzzleRenderer : MonoBehaviour
         CreatePuzzle();
     }
 
+    #region Rendering
     /// <summary>
-    /// Creates line prefabs to display the given puzzle. Will reset the line renderer. Will skip null paths.
+    /// Creates line prefabs to display the given puzzle. Will skip null paths.
     /// </summary>
     public void CreatePuzzle()
     {
@@ -49,7 +50,16 @@ public class PuzzleRenderer : MonoBehaviour
 
         Dictionary<Vector2Int, Vector2Int[]> corners = _puzzle.GetCorners();
 
-        // draw end points
+        DrawEndPoints(GOorganizer);
+        DrawStartPoints(GOorganizer);
+        DrawNodes(GOorganizer, corners);
+        DrawPaths(GOorganizer);
+
+        Debug.Log($"Successfully Rendered puzzle \'{_puzzleJSON.name}\'.");
+    }
+
+    void DrawEndPoints(Transform GOorganizer)
+    {
         foreach (KeyValuePair<Vector2Int, Direction> pair in _puzzle.EndNodes)
         {
             Vector2 dir = Puzzle.GetDirectionVector(pair.Value);
@@ -65,8 +75,10 @@ public class PuzzleRenderer : MonoBehaviour
                 }
             }
         }
+    }
 
-        // draw starting points
+    void DrawStartPoints(Transform GOorganizer)
+    {
         foreach (Vector2Int startPoint in _puzzle.StartNodes)
         {
             GameObject go = MeshLine.DrawStartPoint(configs, GOorganizer, PuzzleToLocal(startPoint));
@@ -76,8 +88,10 @@ public class PuzzleRenderer : MonoBehaviour
             coordCompon.coord = startPoint;
             coordCompon.puzzle = this;
         }
+    }
 
-        // draw nodes
+    void DrawNodes(Transform GOorganizer, in Dictionary<Vector2Int, Vector2Int[]> corners)
+    {
         foreach (KeyValuePair<Vector2Int, List<Path>> node in _puzzle.GetAdjacencyListPaths())
         {
             GameObject segment;
@@ -104,8 +118,10 @@ public class PuzzleRenderer : MonoBehaviour
 
             _lineSegments.Add(segment);
         }
+    }
 
-        // draw paths
+    void DrawPaths(Transform GOorganizer)
+    {
         foreach (KeyValuePair<Path, PathType> entry in _puzzle)
         {
             Vector3 localStart = PuzzleToLocal(entry.Key.p1);
@@ -126,9 +142,24 @@ public class PuzzleRenderer : MonoBehaviour
                 default: continue;
             }
         }
-
-        Debug.Log($"Successfully Rendered puzzle \'{_puzzleJSON.name}\'.");
     }
+
+    /// <summary>
+    /// Deletes current line renderers and removes their references.
+    /// </summary>
+    public void ClearLines()
+    {
+        if (_lineSegments != null)
+        {
+            foreach (GameObject line in _lineSegments)
+            {
+                DestroyImmediate(line);
+            }
+        }
+
+        _lineSegments = new List<GameObject>();
+    }
+    #endregion
 
     #region Vector Utilities
     /// <summary>
@@ -256,22 +287,6 @@ public class PuzzleRenderer : MonoBehaviour
         return angle;
     }
     #endregion
-
-    /// <summary>
-    /// Deletes current line renderers and removes their references.
-    /// </summary>
-    public void ClearLines()
-    {
-        if (_lineSegments != null)
-        {
-            foreach (GameObject line in _lineSegments)
-            {
-                DestroyImmediate(line);
-            }
-        }
-
-        _lineSegments = new List<GameObject>();
-    }
 
     #region Accessors
     /// <summary>

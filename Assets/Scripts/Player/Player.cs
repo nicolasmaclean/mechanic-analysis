@@ -1,6 +1,7 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 [RequireComponent(typeof(VirtualMouse), typeof(PlayerMovement))]
 public class Player : MonoBehaviour
@@ -83,6 +84,10 @@ public class Player : MonoBehaviour
         {
             Quit();
         }
+        if (Input.GetKeyDown(KeyCode.R))
+        {
+            RestartScene();
+        }
     }
 
     void OnDestroy()
@@ -104,7 +109,6 @@ public class Player : MonoBehaviour
 
         if (_atIntersection)
         {
-            //_position += ScreenToPuzzleSpacing(mouseDelta);
             _position = ScreenToPuzzle(_virtualMouse.Position);
             _position = ClampToIntersection(_position, _intersection);
             _virtualMouse.Position = PuzzleToScreen(_position);
@@ -122,9 +126,6 @@ public class Player : MonoBehaviour
             _position = ScreenToPuzzle(_virtualMouse.Position);
             _position = ClampToPath(_position, _intersection, _targetPosition);
             _virtualMouse.Position = PuzzleToScreen(_position);
-
-            // prevent moving into a gap or self-intersection
-            // update _virtualMouse
 
             // checks if entering intersection
             bool enteringNextIntersection = WithinSquareRadius(_targetPosition, _intersectionWidth, _position);
@@ -336,6 +337,11 @@ public class Player : MonoBehaviour
     {
         Debug.Log("Quitting game.");
         Application.Quit();
+    }
+
+    void RestartScene()
+    {
+        SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
     }
     #endregion
 
