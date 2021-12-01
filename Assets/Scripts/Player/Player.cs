@@ -290,6 +290,7 @@ public class Player : MonoBehaviour
             AudioManager.instance.PlayClip(_winClip, .6f);
             _playerPath.Complete();
             _virtualMouse.Deactivate();   // would need to consider if this is the first time the puzzle has been solved to auto-deactivate here
+            _puzzleFrame.Deactivate();
             //_position = _intersection + ((Vector2) _targetPosition - _intersection) * (1 - _puzzle.configs.endLength);
         }
     }

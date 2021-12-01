@@ -34,7 +34,7 @@ public class PuzzleFrame : MonoBehaviour
 
     public void Deactivate()
     {
-        StartCoroutine(FadeOut(_animationDuration));
+        StartCoroutine(FadeOut(_animationDuration * 2 / 3));
     }
 
     IEnumerator FadeIn(float finalAlpha, float duration)
