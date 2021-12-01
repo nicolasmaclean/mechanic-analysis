@@ -318,6 +318,7 @@ MonoBehaviour:
   _puzzleFrame: {fileID: 2141876205}
   _startDrawingClip: {fileID: 8300000, guid: f0602dbb63ca0ce4ea4b3b385e1fc18a, type: 3}
   _interactionClip: {fileID: 8300000, guid: 5aad0542b6706f54b8d76f8bf113ead2, type: 3}
+  _winClip: {fileID: 8300000, guid: 97f40c87d2df61841960cbef5f60f40b, type: 3}
   _puzzle: {fileID: 1308241505}
 --- !u!4 &289359400
 Transform:

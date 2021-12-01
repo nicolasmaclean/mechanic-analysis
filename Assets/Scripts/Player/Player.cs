@@ -29,9 +29,13 @@ public class Player : MonoBehaviour
     [SerializeField]
     AudioClip _startDrawingClip;
 
-    [Tooltip("Clip to be player when the player interacts with a puzzle")]
+    [Tooltip("Clip to be played when the player interacts with a puzzle")]
     [SerializeField]
     AudioClip _interactionClip;
+
+    [Tooltip("Clip to be played when the player wins a puzzle.")]
+    [SerializeField]
+    AudioClip _winClip;
     #endregion
 
     #region Private Variables
@@ -283,6 +287,7 @@ public class Player : MonoBehaviour
         {
             State = PlayerState.LookingAtPuzzle;
             Won = true;
+            AudioManager.instance.PlayClip(_winClip, 1);
             //_virtualMouse.Deactivate();   // would need to consider if this is the first time the puzzle has been solved to auto-deactivate here
             //_position = _intersection + ((Vector2) _targetPosition - _intersection) * (1 - _puzzle.configs.endLength);
         }
