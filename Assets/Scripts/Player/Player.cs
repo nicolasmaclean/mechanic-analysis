@@ -24,6 +24,14 @@ public class Player : MonoBehaviour
     [Tooltip("Reference to puzzle frame gameObject.")]
     [SerializeField]
     PuzzleFrame _puzzleFrame;
+
+    [Tooltip("Clip to be played when the player starts drawing")]
+    [SerializeField]
+    AudioClip _startDrawingClip;
+
+    [Tooltip("Clip to be player when the player interacts with a puzzle")]
+    [SerializeField]
+    AudioClip _interactionClip;
     #endregion
 
     #region Private Variables
@@ -258,6 +266,7 @@ public class Player : MonoBehaviour
     {
         if (!_playerPath.StartPath(coord, this)) return;
 
+        AudioManager.instance.PlayClip(_startDrawingClip, 1);
         State = PlayerState.Drawing;
         Won = false;
         EnterIntersection(coord);
@@ -294,6 +303,10 @@ public class Player : MonoBehaviour
         _virtualMouse.Activate(new Vector2(Screen.width / 2, Screen.height / 2), _spacing * _puzzleLineWidth);
         _puzzleFrame.Activate();
 
+        AudioManager.instance.PlayClip(_interactionClip, (go) =>
+        {
+            StartCoroutine(WooshInFadeOut(go.GetComponent<AudioSource>()));
+        });
         // move camera to view puzzle
         // lock player movement
     }
@@ -526,6 +539,35 @@ public class Player : MonoBehaviour
         _virtualMouse.OnLeftClick -= AttemptToStartDrawing;
         _virtualMouse.OnRightClick -= StopDrawing;
         _virtualMouse.OnLeftClick -= Win;
+    }
+    #endregion
+
+    #region IEnumerators
+    IEnumerator WooshInFadeOut(AudioSource source)
+    {
+        float len = 2f;
+        float peakFrac = .9f;
+        float elapsedtime = 0;
+
+        while (elapsedtime < len)
+        {
+            if (source == null) break;
+
+            float nVol;
+            if (elapsedtime < peakFrac * len)
+            {
+                nVol = Mathf.Lerp(0, 1, elapsedtime / (peakFrac * len));
+            }
+            else
+            {
+                nVol = Mathf.Lerp(1, 0, (elapsedtime - peakFrac * len) / (len - peakFrac * len));
+            }
+
+            source.volume = nVol;
+            yield return null;
+            elapsedtime += Time.deltaTime;
+        }
+
     }
     #endregion
 }
