@@ -30,6 +30,10 @@ public class PlayerPath : MonoBehaviour
     [Tooltip("The cycle length of the pulsing animation performed when the player has reached the end of the puzzle.")]
     [SerializeField]
     float _winCycle = .8f;
+
+    [Tooltip("Wire gameobject to have its material change upon completing the puzzle.")]
+    [SerializeField]
+    GameObject _GOWire;
     #endregion
 
     #region Private Variables
@@ -42,6 +46,9 @@ public class PlayerPath : MonoBehaviour
     int _emissionID;
     Color _initialColor;
     Color _initialEmission;
+
+    Renderer _wireRenderer;
+    Color _initialWireEmission;
 
     float _elapsedTime = 0;
     #endregion
@@ -61,6 +68,12 @@ public class PlayerPath : MonoBehaviour
 
         _initialColor = _instancedMaterial.color;
         _initialEmission = _instancedMaterial.GetColor(_emissionID);
+
+        _wireRenderer = _GOWire.GetComponent<Renderer>();
+        _initialWireEmission = _wireRenderer.materials[1].GetColor(_emissionID);
+        Color b = Color.black;
+        b.a = _initialWireEmission.a;
+        _wireRenderer.materials[1].SetColor(_emissionID, b);
     }
 
     void Update()
@@ -172,6 +185,11 @@ public class PlayerPath : MonoBehaviour
         nScal.y = Vector3.Distance(localStart, localEnd);
         lineT.localScale = nScal;
         capT.localPosition = localEnd;
+    }
+
+    public void Complete()
+    {
+        StartCoroutine(FadeEmission(_wireRenderer.materials[1], _initialWireEmission, .8f));
     }
 
     /// <summary>
@@ -297,6 +315,25 @@ public class PlayerPath : MonoBehaviour
     {
         yield return new WaitForSeconds(waitTime);
         callback();
+    }
+
+    IEnumerator FadeEmission(Material mat, Color fColor, float duration)
+    {
+        Color iColor = mat.GetColor(_emissionID);
+        fColor.a = iColor.a;
+
+        if (fColor == iColor) { yield break; }
+        float elapsedtime = 0;
+
+        while (elapsedtime < duration)
+        {
+            mat.SetColor(_emissionID, Color.Lerp(iColor, fColor, elapsedtime / duration));
+
+            yield return null;
+            elapsedtime += Time.deltaTime;
+        }
+
+        mat.SetColor(_emissionID, fColor);
     }
     #endregion
 }

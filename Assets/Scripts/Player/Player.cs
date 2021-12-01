@@ -279,7 +279,7 @@ public class Player : MonoBehaviour
     /// <summary>
     ///     finishes the current puzzle. Updates to LookingAtPuzzle state.
     /// </summary>
-    void Win()
+    void Complete()
     {
         if (State != PlayerState.Drawing) return;
 
@@ -288,6 +288,7 @@ public class Player : MonoBehaviour
             State = PlayerState.LookingAtPuzzle;
             Won = true;
             AudioManager.instance.PlayClip(_winClip, 1);
+            _playerPath.Complete();
             //_virtualMouse.Deactivate();   // would need to consider if this is the first time the puzzle has been solved to auto-deactivate here
             //_position = _intersection + ((Vector2) _targetPosition - _intersection) * (1 - _puzzle.configs.endLength);
         }
@@ -532,7 +533,7 @@ public class Player : MonoBehaviour
         _virtualMouse.OnMouseMove += UpdateDrawing;
         _virtualMouse.OnLeftClick += AttemptToStartDrawing;
         _virtualMouse.OnRightClick += StopDrawing;
-        _virtualMouse.OnLeftClick += Win;
+        _virtualMouse.OnLeftClick += Complete;
     }
 
     /// <summary>
@@ -543,7 +544,7 @@ public class Player : MonoBehaviour
         _virtualMouse.OnMouseMove -= UpdateDrawing;
         _virtualMouse.OnLeftClick -= AttemptToStartDrawing;
         _virtualMouse.OnRightClick -= StopDrawing;
-        _virtualMouse.OnLeftClick -= Win;
+        _virtualMouse.OnLeftClick -= Complete;
     }
     #endregion
 
