@@ -26,13 +26,14 @@ public class FPSController : MonoBehaviour
     bool _useMainCamera = false;
 
     [SerializeField]
-    [Tooltip("Camera to manipulate")]
+    [Tooltip("Camera to be manipulated. Only rotation will be adjusted.")]
     Camera _camera;
 
     [SerializeField]
     Vector2 _cameraSensitivity = new Vector2(1000, 1000);
 
     [SerializeField]
+    [Tooltip("Bounds on the camera's vertical rotation.")]
     Vector2 _cameraXRotationBounds = new Vector2(-60, 60);
 
     [SerializeField]
@@ -62,6 +63,7 @@ public class FPSController : MonoBehaviour
     float _groundedDistance = 0.1f;
 
     [SerializeField]
+    [Tooltip("Layers to be considered by isGrounded check. Default is everything")]
     LayerMask _groundedMask = ~0;
 
 
