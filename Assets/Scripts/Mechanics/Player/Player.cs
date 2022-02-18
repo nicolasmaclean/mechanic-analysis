@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
-[RequireComponent(typeof(VirtualMouse), typeof(PlayerMovement))]
+[RequireComponent(typeof(VirtualMouse))]
 public class Player : MonoBehaviour
 {
     #region Public Variables

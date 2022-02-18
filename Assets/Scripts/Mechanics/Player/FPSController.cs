@@ -18,16 +18,15 @@ public class FPSController : MonoBehaviour
     /// of the player collider should be at transform.position. 
     /// </summary>
     public bool isGrounded { get; private set; }
+
+    [Tooltip("Camera to be manipulated. Only rotation will be adjusted.")]
+    public Camera Camera;
     #endregion
 
     #region private variables
     [Header("Camera")]
     [SerializeField]
     bool _useMainCamera = false;
-
-    [SerializeField]
-    [Tooltip("Camera to be manipulated. Only rotation will be adjusted.")]
-    Camera _camera;
 
     [SerializeField]
     Vector2 _cameraSensitivity = new Vector2(1000, 1000);
@@ -76,9 +75,9 @@ public class FPSController : MonoBehaviour
 
         if (_useMainCamera)
         {
-            _camera = Camera.main;
+            Camera = Camera.main;
         }
-        else if (_camera == null)
+        else if (Camera == null)
         {
             Debug.LogWarning("No camera was provided. Camera manipulation will be disabled.");
         }
@@ -95,7 +94,7 @@ public class FPSController : MonoBehaviour
 
     void OnEnable()
     {
-        if (_camera != null)
+        if (Camera != null)
         {
             Cursor.lockState = CursorLockMode.Locked;
             Cursor.visible = false;
@@ -104,7 +103,7 @@ public class FPSController : MonoBehaviour
 
     void OnDisable()
     {
-        if (_camera != null)
+        if (Camera != null)
         {
             Cursor.lockState = CursorLockMode.None;
             Cursor.visible = true;
@@ -175,7 +174,7 @@ public class FPSController : MonoBehaviour
     /// </summary>
     void MoveCamera()
     {
-        if (_camera != null)
+        if (Camera != null)
         {
             Vector2 delta = new Vector2(Input.GetAxis("Mouse X"), -Input.GetAxis("Mouse Y"));
             delta *= Time.deltaTime * _cameraSensitivity;
@@ -191,7 +190,7 @@ public class FPSController : MonoBehaviour
             transform.rotation = Quaternion.Euler(rootRotation);
 
             // apply vertical rotation
-            Vector3 camRotation = _camera.transform.localRotation.eulerAngles;
+            Vector3 camRotation = Camera.transform.localRotation.eulerAngles;
             if (camRotation.x > 180)
             {
                 camRotation.x -= 360;
@@ -199,7 +198,7 @@ public class FPSController : MonoBehaviour
             camRotation.x += delta.y;
 
             camRotation.x = Mathf.Clamp(camRotation.x, _cameraXRotationBounds.x, _cameraXRotationBounds.y);
-            _camera.transform.localRotation = Quaternion.Euler(camRotation);
+            Camera.transform.localRotation = Quaternion.Euler(camRotation);
         }
     }
 
@@ -227,7 +226,7 @@ public class FPSController : MonoBehaviour
         public void OnEnable()
         {
             _useMainCameraProperty = serializedObject.FindProperty(nameof(_useMainCamera));
-            _cameraProperty = serializedObject.FindProperty(nameof(_camera));
+            _cameraProperty = serializedObject.FindProperty(nameof(Camera));
             _cameraSensitivityProperty = serializedObject.FindProperty(nameof(_cameraSensitivity));
             _cameraXRotationBoundsProperty = serializedObject.FindProperty(nameof(_cameraXRotationBounds));
 

@@ -9,7 +9,9 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 8605421733185047301}
+  - component: {fileID: 962661012}
   - component: {fileID: 8605421733185047302}
+  - component: {fileID: 7633186867433653689}
   - component: {fileID: 8605421733185047303}
   m_Layer: 10
   m_Name: Player
@@ -34,6 +36,21 @@ Transform:
   m_Father: {fileID: 0}
   m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &962661012
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8605421733185047300}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 208953fe58d5cb04aa84d5a9dedad7aa, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  _primaryActionKeyCode: 323
+  _secondaryActionKeyCode: 324
+  _interactionRange: 0.85
 --- !u!114 &8605421733185047302
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -47,8 +64,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   Velocity: {x: 0, y: 0, z: 0}
+  Camera: {fileID: 0}
   _useMainCamera: 1
-  _camera: {fileID: 0}
   _cameraSensitivity: {x: 1000, y: 1000}
   _cameraXRotationBounds: {x: -60, y: 60}
   _invertMouse: 0
@@ -62,6 +79,26 @@ MonoBehaviour:
   _groundedMask:
     serializedVersion: 2
     m_Bits: 4294967295
+--- !u!114 &7633186867433653689
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8605421733185047300}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 781e0dec9dd09f246b4c790c44058b42, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  Position: {x: 0, y: 0}
+  Speed: 2500
+  Activated: 1
+  _activationDuration: 1
+  _deactivationDuration: 0.25
+  _animationScale: 7
+  _cursor: {fileID: 0}
+  _cursorCenter: {fileID: 0}
 --- !u!143 &8605421733185047303
 CharacterController:
   m_ObjectHideFlags: 0
