@@ -4,7 +4,7 @@ using UnityEngine;
 using UnityEngine.UI;
 using Gummi.VFX;
 
-namespace Gummi.Player.Mouse
+namespace Gummi.Player
 {
     /// <summary>
     /// Abstracts cursor vfx from Virtual Mouse logic.

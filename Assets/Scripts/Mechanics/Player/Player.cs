@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.SceneManagement;
-using Gummi.Player.Mouse;
+using Gummi.Player;
 
 [RequireComponent(typeof(VirtualMouse))]
 public class Player : MonoBehaviour
