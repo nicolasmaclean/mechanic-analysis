@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.SceneManagement;
+using Gummi.Player.Mouse;
 
 [RequireComponent(typeof(VirtualMouse))]
 public class Player : MonoBehaviour
@@ -308,7 +309,7 @@ public class Player : MonoBehaviour
         State = PlayerState.LookingAtPuzzle;
         UpdateCoordinateConversionLogic();
 
-        _virtualMouse.Activate(new Vector2(Screen.width / 2, Screen.height / 2), _spacing * _puzzleLineWidth);
+        //_virtualMouse.Activate(new Vector2(Screen.width / 2, Screen.height / 2), _spacing * _puzzleLineWidth);
         _puzzleFrame.Activate();
 
         AudioManager.instance.PlayClip(_interactionClip, (go) =>
@@ -537,10 +538,10 @@ public class Player : MonoBehaviour
     /// </summary>
     void SubscribeToEvents()
     {
-        _virtualMouse.OnMouseMove += UpdateDrawing;
-        _virtualMouse.OnLeftClick += AttemptToStartDrawing;
-        _virtualMouse.OnRightClick += StopDrawing;
-        _virtualMouse.OnLeftClick += Complete;
+        //_virtualMouse.OnMouseMove += UpdateDrawing;
+        //_virtualMouse.OnLeftClick += AttemptToStartDrawing;
+        //_virtualMouse.OnRightClick += StopDrawing;
+        //_virtualMouse.OnLeftClick += Complete;
     }
 
     /// <summary>
@@ -548,10 +549,10 @@ public class Player : MonoBehaviour
     /// </summary>
     private void UnsubscribeToEvents()
     {
-        _virtualMouse.OnMouseMove -= UpdateDrawing;
-        _virtualMouse.OnLeftClick -= AttemptToStartDrawing;
-        _virtualMouse.OnRightClick -= StopDrawing;
-        _virtualMouse.OnLeftClick -= Complete;
+        //_virtualMouse.OnMouseMove -= UpdateDrawing;
+        //_virtualMouse.OnLeftClick -= AttemptToStartDrawing;
+        //_virtualMouse.OnRightClick -= StopDrawing;
+        //_virtualMouse.OnLeftClick -= Complete;
     }
     #endregion
 

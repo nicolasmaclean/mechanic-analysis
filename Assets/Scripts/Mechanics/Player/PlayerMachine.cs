@@ -1,8 +1,9 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using Gummi.Player;
 
-namespace Game
+namespace Game.Player
 {
     [RequireComponent(typeof(FPSController), typeof(VirtualMouse))]
     public class PlayerMachine : MonoBehaviour
@@ -143,7 +144,7 @@ namespace Game
         IEnumerator TFPSToInspecting()
         {
             DisableFPS();
-            //_mouse.Activate();
+            _mouse.Activate();
 
             InTransition = false;
             yield break;
@@ -164,6 +165,7 @@ namespace Game
         IEnumerator TInspectingToFPS()
         {
             EnableFPS();
+            _mouse.Deactivate();
 
             InTransition = false;
             yield break;
