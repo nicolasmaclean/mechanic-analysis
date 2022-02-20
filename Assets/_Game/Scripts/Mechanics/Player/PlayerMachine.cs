@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 using Gummi.Player;
+using Game.Puzzle;
 
 namespace Game.Player
 {

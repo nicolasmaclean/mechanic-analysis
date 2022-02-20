@@ -3,18 +3,21 @@ using System.Collections.Generic;
 using UnityEngine;
 using Gummi;
 
-[RequireComponent(typeof(Collider))]
-public class InteractablePuzzle : MonoBehaviour, IInteractable
+namespace Game.Puzzle
 {
-    #region IInteractable
-    public void OnEnter() {    }
-
-    public void OnLeave() {    }
-
-    public void Interact()
+    [RequireComponent(typeof(Collider), typeof(PuzzleRenderer))]
+    public class InteractablePuzzle : MonoBehaviour, IInteractable
     {
-        // activate puzzle stuffs but
-        // PlayerManager should deal with its own state though
+        #region IInteractable
+        public void OnEnter() {    }
+
+        public void OnLeave() {    }
+
+        public void Interact()
+        {
+            // activate puzzle stuffs but
+            // PlayerManager should deal with its own state though
+        }
+        #endregion
     }
-    #endregion
 }

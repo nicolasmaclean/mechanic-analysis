@@ -1,41 +1,42 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using Game.Puzzle;
 
 public class MeshLine : MonoBehaviour
 {
     #region PuzzleConfigs Wrappers
-    public static GameObject DrawStartPoint(in PuzzleConfigs configs, Transform parent, Vector3 pos)
+    public static GameObject DrawStartPoint(in SOPuzzleConfigurations configs, Transform parent, Vector3 pos)
     {
         return DrawStartPoint(configs.startPrefab, parent, pos, configs.startNodeSize, configs.lineWidth);
     }
 
-    public static GameObject DrawConnectedPath(in PuzzleConfigs configs, Transform parent, Vector3 start, Vector3 end)
+    public static GameObject DrawConnectedPath(in SOPuzzleConfigurations configs, Transform parent, Vector3 start, Vector3 end)
     {
         return DrawConnectedPath(configs.quadPrefab, parent, start, end, configs.lineWidth);
     }
 
-    public static GameObject[] DrawSplitPath(in PuzzleConfigs configs, Transform parent, Vector3 start, Vector3 end)
+    public static GameObject[] DrawSplitPath(in SOPuzzleConfigurations configs, Transform parent, Vector3 start, Vector3 end)
     {
         return DrawSplitPath(configs.quadPrefab, parent, start, end, configs.lineWidth, configs.splitGap);
     }
 
-    public static GameObject DrawRoundedCorner(in PuzzleConfigs configs, Transform parent, Vector3 pos, float angle)
+    public static GameObject DrawRoundedCorner(in SOPuzzleConfigurations configs, Transform parent, Vector3 pos, float angle)
     {
         return DrawRoundedCorner(configs.cornerPrefab, parent, pos, configs.lineWidth, angle);
     }
 
-    public static GameObject DrawSharpCorner(in PuzzleConfigs configs, Transform parent, Vector3 pos)
+    public static GameObject DrawSharpCorner(in SOPuzzleConfigurations configs, Transform parent, Vector3 pos)
     {
         return DrawSharpCorner(configs.quadPrefab, parent, pos, configs.lineWidth);
     }
 
-    public static GameObject[] DrawLineRounded(in PuzzleConfigs configs, Transform parent, Vector3 start, Vector3 end, bool first = true, bool last = true)
+    public static GameObject[] DrawLineRounded(in SOPuzzleConfigurations configs, Transform parent, Vector3 start, Vector3 end, bool first = true, bool last = true)
     {
         return DrawLineRounded(configs.quadPrefab, configs.capPrefab, parent, start, end, configs.lineWidth, first, last);
     }
 
-    public static GameObject DrawEndCap(in PuzzleConfigs configs, Transform parent, Vector3 pos, float angle)
+    public static GameObject DrawEndCap(in SOPuzzleConfigurations configs, Transform parent, Vector3 pos, float angle)
     {
         return DrawEndCap(configs.capPrefab, parent, pos, configs.lineWidth, angle);
     }
@@ -47,7 +48,7 @@ public class MeshLine : MonoBehaviour
     /// <param name="parent"></param>
     /// <param name="verts"></param>
     /// <returns></returns>
-    public static GameObject[] DrawStroke(in PuzzleConfigs configs, Transform parent, Vector3[] verts)
+    public static GameObject[] DrawStroke(in SOPuzzleConfigurations configs, Transform parent, Vector3[] verts)
     {
 
         if (verts.Length > 0)
@@ -72,7 +73,7 @@ public class MeshLine : MonoBehaviour
         return new GameObject[0];
     }
 
-    public static GameObject DrawLine(in PuzzleConfigs configs, Transform parent, Vector3 start, Vector3 end)
+    public static GameObject DrawLine(in SOPuzzleConfigurations configs, Transform parent, Vector3 start, Vector3 end)
     {
         return DrawLine(configs.quadPrefab, parent, start, end, configs.lineWidth);
     }

@@ -2,8 +2,11 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class PuzzleCoordinate : MonoBehaviour
+namespace Game.Puzzle
 {
-    public Vector2Int coord;
-    public PuzzleRenderer puzzle;
+    public class PuzzleCoordinate : MonoBehaviour
+    {
+        public Vector2Int coord;
+        public PuzzleRenderer puzzle;
+    }
 }

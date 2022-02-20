@@ -9,7 +9,8 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 6795337661896673181}
-  - component: {fileID: 9111389695572579282}
+  - component: {fileID: 3045200935827555021}
+  - component: {fileID: 1737495908634795120}
   - component: {fileID: 8618726964160100844}
   m_Layer: 0
   m_Name: Puzzle
@@ -33,7 +34,7 @@ Transform:
   m_Father: {fileID: 0}
   m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &9111389695572579282
+--- !u!114 &3045200935827555021
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -45,6 +46,20 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b64eb52a80a8bb04d8d4095c6009732c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+--- !u!114 &1737495908634795120
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5918584238499456197}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: aa07a19a4efa33548856736508e42bf1, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  configs: {fileID: 11400000, guid: 5595bd1b88e28a349b9ba89b4b3a5c39, type: 2}
+  _puzzleJSON: {fileID: 4900000, guid: 090f7476245570440ba847a6ac4a6645, type: 3}
 --- !u!65 &8618726964160100844
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -53,11 +68,11 @@ BoxCollider:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 5918584238499456197}
   m_Material: {fileID: 0}
-  m_IsTrigger: 0
+  m_IsTrigger: 1
   m_Enabled: 1
   serializedVersion: 2
   m_Size: {x: 0.65, y: 0.69, z: 0.34}
-  m_Center: {x: 0, y: 1.43, z: 0}
+  m_Center: {x: 0, y: 0.05, z: 0}
 --- !u!65 &981515169
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -69,8 +84,8 @@ BoxCollider:
   m_IsTrigger: 0
   m_Enabled: 1
   serializedVersion: 2
-  m_Size: {x: 0.65, y: 1.8, z: 0.34}
-  m_Center: {x: 0, y: 0.85, z: 0}
+  m_Size: {x: 1.8, y: 4.4, z: 0.7}
+  m_Center: {x: 0, y: 2.2, z: 0}
 --- !u!1001 &8179280684238838344
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -106,12 +121,12 @@ PrefabInstance:
     - target: {fileID: -8679921383154817045, guid: 25153191349e41a4bbffdf2d1a244b30,
         type: 3}
       propertyPath: m_LocalPosition.y
-      value: 0
+      value: -1.4
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: 25153191349e41a4bbffdf2d1a244b30,
         type: 3}
       propertyPath: m_LocalPosition.z
-      value: 0
+      value: 0.05
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: 25153191349e41a4bbffdf2d1a244b30,
         type: 3}

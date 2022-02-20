@@ -1,6 +1,7 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using Game.Player;
 
 [RequireComponent(typeof(SpriteRenderer), typeof(AudioSource))]
 public class GoalMarker : MonoBehaviour
@@ -30,7 +31,7 @@ public class GoalMarker : MonoBehaviour
 
     [Header("General")]
     [SerializeField]
-    Player _player;
+    Game.Player.Player _player;
 
     [Tooltip("")]
     [SerializeField]
@@ -65,7 +66,7 @@ public class GoalMarker : MonoBehaviour
 
     void Update()
     {
-        if ( (_isStartMarker && _player.State == PlayerState.LookingAtPuzzle && !_player.Won) || (_isEndMarker && !_player.AtEnd && _player.State == PlayerState.Drawing) )
+        if ( (_isStartMarker && _player.State == PlayerState.Inspecting && !_player.Won) || (_isEndMarker && !_player.AtEnd && _player.State == PlayerState.Drawing) )
         {
             UpdateVFX();
 
