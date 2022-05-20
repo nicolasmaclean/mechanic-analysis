@@ -1,23 +1,30 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
+using Cinemachine;
 using UnityEngine;
 using Gummi;
 
 namespace Game.Puzzle
 {
     [RequireComponent(typeof(Collider), typeof(PuzzleRenderer))]
-    public class InteractablePuzzle : MonoBehaviour, IInteractable
+    public class InteractablePuzzle : InteractableBase
     {
-        #region IInteractable
-        public void OnEnter() {    }
+        [SerializeField]
+        CinemachineVirtualCamera _camera;
 
-        public void OnLeave() {    }
-
-        public void Interact()
+        void Start()
         {
-            // activate puzzle stuffs but
-            // PlayerManager should deal with its own state though
+            _camera.enabled = false;
         }
-        #endregion
+        
+        public override void Begin()
+        {
+            _camera.enabled = true;
+        }
+
+        public override void End()
+        {
+            _camera.enabled = false;
+        }
     }
 }

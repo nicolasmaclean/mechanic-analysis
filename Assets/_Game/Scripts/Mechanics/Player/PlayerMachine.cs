@@ -24,13 +24,15 @@ namespace Game.Player
 
         [Header("Settings")]
         [SerializeField]
-        float _interactionRange = 1.5f;
+        float _interactionRange = .85f;
 
         FPSController _fpsController;
         VirtualMouse _mouse;
 
         Dictionary<PlayerState, List<Transition>> _transitions = new Dictionary<PlayerState, List<Transition>>();
         RaycastHit _hitinfo;
+        InteractablePuzzle _currentPuzzle = null;
+        Camera _camera;
         #endregion
 
         #region Monobehaviour
@@ -38,6 +40,7 @@ namespace Game.Player
         {
             _fpsController = GetComponent<FPSController>();
             _mouse = GetComponent<VirtualMouse>();
+            _camera = Camera.main;
 
             AddTransitions();
         }
@@ -119,21 +122,20 @@ namespace Game.Player
 
             // look forwards for InteractablePuzzle
             LayerMask allExceptInteractables = ~0 - LayerMask.GetMask("Interactable");
-            Ray forwardRay = _fpsController.Camera.ViewportPointToRay(new Vector3(0.5f, 0.5f, 1));
+            Ray forwardRay = _camera.ViewportPointToRay(new Vector3(0.5f, 0.5f, 1));
             bool lookingAtSomething = Physics.Raycast(forwardRay, out _hitinfo, _interactionRange, allExceptInteractables);
             if (lookingAtSomething)
             {
                 InteractablePuzzle puzzle = _hitinfo.collider.gameObject.GetComponent<InteractablePuzzle>();
-                bool lookingAtPuzzle = puzzle != null;
-                if (lookingAtPuzzle)
+                if (!canModifyState || !puzzle)
                 {
-                    if (canModifyState)
-                    {
-                        puzzle.Interact();
-                    }
-
-                    return true;
+                    return false;
                 }
+            
+                puzzle.Begin();
+                _currentPuzzle = puzzle;
+            
+                return true;
             }
 
             return false;
@@ -167,6 +169,9 @@ namespace Game.Player
         {
             EnableFPS();
             _mouse.Deactivate();
+            
+            _currentPuzzle?.End();
+            _currentPuzzle = null;
 
             InTransition = false;
             yield break;
